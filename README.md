@@ -1,25 +1,25 @@
-# 🚀 FuzzyBolt - A Fast & Efficient Fuzzy Search Library for Dart
+# FuzzyBolt 🔥
+
+**A powerful and optimized fuzzy search algorithm with typo tolerance and ranking.**
 
 [![pub package](https://img.shields.io/pub/v/fuzzy_bolt.svg)](https://pub.dev/packages/fuzzy_bolt)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-blue)](LICENSE)
 
-FuzzyBolt is a high-performance fuzzy search library for Dart, designed for fast and accurate matching of search queries within large datasets. It leverages **Jaro-Winkler similarity** and **Damerau-Levenshtein distance** to provide ranked results with typo tolerance.
+## 🚀 Features
 
-## ✨ Features
-- 🔍 **Fast & Optimized** - Uses Jaro-Winkler and Damerau-Levenshtein for accurate matching.
-- ⚡ **Isolate Support** - Automatically switches to isolates for large datasets.
-- 🔢 **Configurable Thresholds** - Adjust strict and typo-matching sensitivity.
-- 📝 **Easy-to-Use API** - Simple function calls with named parameters.
-- 🧪 **Well-Tested** - Comes with robust test cases.
-
----
+- **Fast and accurate fuzzy search** powered by Jaro-Winkler and Damerau-Levenshtein algorithms.
+- **Typo tolerance** for handling spelling mistakes.
+- **Ranking system** to prioritize better matches.
+- **Asynchronous processing** using Dart isolates.
+- **Lightweight and easy to use**.
 
 ## 📦 Installation
-Add `fuzzy_bolt` to your project's `pubspec.yaml`:
+
+Add FuzzyBolt to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  fuzzy_bolt: ^1.0.0
+  fuzzy_bolt: latest_version
 ```
 
 Then, run:
@@ -27,7 +27,9 @@ Then, run:
 ```sh
 dart pub get
 ```
-## 🚀 Usage Example
+
+## 📖 Usage
+
 ```dart
 import 'package:fuzzy_bolt/fuzzy_bolt.dart';
 
@@ -59,8 +61,9 @@ void main() async {
 }
 ```
 
-## 🛠 Output Example
-```bash
+### 🛠 Output Example:
+
+```
 Top Matches:
 blackberry (Score: 0.89)
 raspberry (Score: 0.85)
@@ -68,34 +71,69 @@ blueberry (Score: 0.72)
 ```
 
 ## ⚡ API Reference
-FuzzyBolt.search({dataset, query, strictThreshold, typoThreshold}) → Future<List<Map<String, dynamic>>>
 
-### Parameters:
-🔹 dataset (List<String>) → The list of items to search through. <br>
-🔹 query (String) → The search term entered by the user.<br>
-🔹 strictThreshold (double, required) → The minimum Jaro-Winkler similarity score required for a match.<br>
-🔹 typoThreshold (double, required) → The minimum Damerau-Levenshtein distance score required for a match.<br>
+```dart
+Future<List<Map<String, dynamic>>> search({
+  required List<String> dataset,
+  required String query,
+  required double strictThreshold,
+  required double typoThreshold,
+})
+```
 
-## 📚 Example Use Cases
-✅ Search & Auto-Suggestions - Improve search bars with intelligent suggestions.<br>
-✅ Spell Checking - Detect and correct minor spelling errors.<br>
-✅ Command Line Interfaces - Enhance fuzzy matching in CLI applications.<br>
-✅ Data Deduplication - Identify similar records in datasets.<br>
+| Parameter          | Type     | Description |
+|------------------|---------|-------------|
+| `dataset`        | `List<String>` | The list of items to search through. |
+| `query`          | `String` | The search term entered by the user. |
+| `strictThreshold` | `double` | Minimum Jaro-Winkler similarity score required for a match. |
+| `typoThreshold`  | `double` | Minimum Damerau-Levenshtein distance score required for a match. |
+
+## 📚 Use Cases
+
+✅ **Search & Auto-Suggestions** - Enhance search bars with intelligent suggestions.  
+✅ **Spell Checking** - Detect and correct minor spelling errors.  
+✅ **Command Line Interfaces** - Improve fuzzy matching in CLI applications.  
+✅ **Data Deduplication** - Identify similar records in datasets.  
+
+## 🔥 Platform Support
+
+| Platform  | Supported |
+|-----------|----------|
+| Android   | ✅ Yes |
+| iOS       | ✅ Yes |
+| macOS     | ✅ Yes |
+| Windows   | ✅ Yes |
+| Linux     | ✅ Yes |
+| Web       | ❌ No |
+
+**Why no Web support?**  
+FuzzyBolt uses Dart isolates for parallel computation, which are **not supported on Flutter Web**.  I'll eventually enhance a fallback mechanism which leverages **Web Workers** for web platform.
 
 ## 🔬 Running Tests
-To ensure FuzzyBolt works correctly, run:
+
+To run tests, use:
 
 ```sh
 dart test
+test/fuzzy_bolt_test.dart
 ```
 
 ## 📜 License
-This package is licensed under the MIT License. See the LICENSE file for details.
+
+This package is licensed under the **BSD-3-Clause License**. See the [LICENSE](LICENSE) file for details.
 
 ## ❤️ Contributing
-Contributions are welcome! Feel free to open issues, submit PRs, or discuss improvements.
 
-💬 Have questions? Reach out on GitHub Issues!<br>
-🌟 Like this package? Give it a star on GitHub! ⭐<br>
+We welcome contributions! If you'd like to improve FuzzyBolt:
+- Open an issue on [GitHub](https://github.com/your-repo/fuzzy_bolt/issues)
+- Submit a pull request
+- Suggest new features or report bugs
+
+## 💬 Questions?
+
+If you have any questions, feel free to open a discussion on GitHub or raise an issue.
+
+🌟 **Like this package? Star it on GitHub!** ⭐
+
 
 ## 🔹 Made with ❤️ by Vishwa Karthik.

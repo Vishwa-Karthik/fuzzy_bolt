@@ -6,8 +6,11 @@ import '../utils/fuzzy_typo_handler.dart';
 class FuzzySearchAlgorithm {
   final List<String> dataset;
 
+  // Constructor to initialize the dataset.
   FuzzySearchAlgorithm(this.dataset);
 
+  /// Searches the dataset for the given query.
+  /// If the dataset is large, it uses isolates for asynchronous processing.
   Future<List<Map<String, dynamic>>> search(String query) async {
     if (dataset.length > 10000) {
       return await _searchInIsolate(query, dataset);
@@ -16,6 +19,7 @@ class FuzzySearchAlgorithm {
     }
   }
 
+  /// Performs the search in a separate isolate for large datasets.
   static Future<List<Map<String, dynamic>>> _searchInIsolate(
       String query, List<String> dataset) async {
     final receivePort = ReceivePort();
@@ -23,6 +27,7 @@ class FuzzySearchAlgorithm {
     return await receivePort.first as List<Map<String, dynamic>>;
   }
 
+  /// The function that runs in the isolate to perform the search.
   static void _isolateSearch(List<dynamic> args) {
     String query = args[0];
     List<String> dataset = args[1];
@@ -30,6 +35,7 @@ class FuzzySearchAlgorithm {
     sendPort.send(_performSearch(query, dataset));
   }
 
+  /// Performs the search on the dataset.
   static List<Map<String, dynamic>> _performSearch(
       String query, List<String> dataset) {
     query = query.toLowerCase();
@@ -46,10 +52,12 @@ class FuzzySearchAlgorithm {
       }
     }
 
+    // Sort results by rank in descending order.
     results.sort((a, b) => b['rank'].compareTo(a['rank']));
     return results;
   }
 
+  /// Determines the rank of a search result based on the similarity score and typo distance.
   static int _determineRank(double score, int typoDistance) {
     if (score == 1.0) return 3; // Strict match
     if (score >= 0.85) return 2; // Partial match

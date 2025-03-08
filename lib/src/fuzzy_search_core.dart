@@ -3,6 +3,8 @@ import '../utils/fuzzy_ranking.dart';
 import '../utils/fuzzy_typo_handler.dart';
 
 class FuzzyBolt {
+  /// Searches the dataset for the given query.
+  /// If the dataset is large, it uses isolates for asynchronous processing.
   static Future<List<Map<String, dynamic>>> search(
     List<String> dataset,
     String query,
@@ -14,6 +16,7 @@ class FuzzyBolt {
     }
   }
 
+  /// Performs the search locally on the main thread.
   static List<Map<String, dynamic>> _searchLocally(
     List<String> dataset,
     String query,
@@ -36,10 +39,12 @@ class FuzzyBolt {
       }
     }
 
+    // Sort results by rank in descending order.
     results.sort((a, b) => b['rank'].compareTo(a['rank']));
     return results;
   }
 
+  /// Performs the search in a separate isolate for large datasets.
   static Future<List<Map<String, dynamic>>> _searchWithIsolate(
     List<String> dataset,
     String query,
@@ -49,6 +54,7 @@ class FuzzyBolt {
     return await receivePort.first;
   }
 
+  /// The function that runs in the isolate to perform the search.
   static void _searchIsolate(List<dynamic> args) {
     SendPort sendPort = args[0];
     List<String> dataset = args[1];
