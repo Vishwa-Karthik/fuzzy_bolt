@@ -5,13 +5,11 @@
 [![pub package](https://img.shields.io/pub/v/fuzzy_bolt.svg)](https://pub.dev/packages/fuzzy_bolt)
 [![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-blue)](LICENSE)
 
-## 🚀 Features
-
-- **Fast and accurate fuzzy search** powered by Jaro-Winkler and Damerau-Levenshtein algorithms.
-- **Typo tolerance** for handling spelling mistakes.
-- **Ranking system** to prioritize better matches.
-- **Asynchronous processing** using Dart isolates.
-- **Lightweight and easy to use**.
+## Features
+✅ **Blazing Fast Performance** 🚀  
+✅ **Advanced String Matching with Jaro-Winkler & Levenshtein Distance**  
+✅ **Ideal for Autocomplete, Search Bars, and Query Refinement**  
+✅ **Asynchronous & Optimized for Large Datasets**
 
 ## 📦 Installation
 
@@ -19,7 +17,7 @@ Add FuzzyBolt to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  fuzzy_bolt: latest_version
+  fuzzy_bolt: <latest_version>  
 ```
 
 Then, run:
@@ -34,40 +32,21 @@ dart pub get
 import 'package:fuzzy_bolt/fuzzy_bolt.dart';
 
 void main() async {
-  final fuzzyBolt = FuzzyBolt();
-
-  List<String> dataset = [
-    "apple",
-    "banana",
-    "grapefruit",
-    "strawberry",
-    "raspberry",
-    "blackberry",
-    "blueberry",
-    "pineapple",
-  ];
-
   final results = await fuzzyBolt.search(
-    dataset: dataset,
-    query: "black rasp",
-    strictThreshold: 0.85,
-    typoThreshold: 0.7,
-  );
-
-  print("Top Matches:");
-  for (var result in results) {
-    print("${result['value']} (Score: ${result['rank']})");
-  }
+  dataset: ["encyclopedia", "phenomenon", "philosophy", "psychology"],
+  query: "phsychology", // Typo: "phsychology" instead of "psychology"
+  strictThreshold: 0.8,
+  typoThreshold: 0.7,
+);
 }
 ```
 
 ### 🛠 Output Example:
 
 ```
-Top Matches:
-blackberry (Score: 0.89)
-raspberry (Score: 0.85)
-blueberry (Score: 0.72)
+psychology (Score: 0.92)  ✅  (Fixes minor spelling mistake)
+philosophy (Score: 0.75)  ❌  (Less relevant but somewhat similar)
+
 ```
 
 ## ⚡ API Reference
@@ -125,7 +104,7 @@ This package is licensed under the **BSD-3-Clause License**. See the [LICENSE](L
 ## ❤️ Contributing
 
 We welcome contributions! If you'd like to improve FuzzyBolt:
-- Open an issue on [GitHub](https://github.com/your-repo/fuzzy_bolt/issues)
+- Open an issue on [GitHub](https://github.com/Vishwa-Karthik/fuzzy_bolt/issues)
 - Submit a pull request
 - Suggest new features or report bugs
 

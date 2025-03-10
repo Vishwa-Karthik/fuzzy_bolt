@@ -1,8 +1,14 @@
 name: fuzzy_bolt
-description: A powerful and optimized fuzzy search algorithm with typo tolerance and ranking.
-version: 1.0.1
+
+description: > 
+  A high-performance fuzzy search algorithm in Dart, designed for intelligent auto-suggestions, typo tolerance, and fast string matching.
+
+version: 1.0.2
+
 repository: https://github.com/Vishwa-Karthik/fuzzy_bolt
+
 homepage: https://github.com/Vishwa-Karthik/fuzzy_bolt
+
 issue_tracker: https://github.com/Vishwa-Karthik/fuzzy_bolt/issues
 
 environment:
@@ -15,7 +21,13 @@ platforms:
   macos:
   windows:
 
-# Add regular dependencies here.
+topics:
+  - fuzzy-search
+  - search
+  - text-processing
+  - autocomplete
+  - ranking
+
 dependencies:
   collection: ^1.19.1
 
