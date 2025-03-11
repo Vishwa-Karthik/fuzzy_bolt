@@ -1,14 +1,15 @@
 import 'dart:isolate';
 
-import 'package:fuzzy_bolt/core/fuzzy_search_bolt_impl.dart';
+import 'package:fuzzy_bolt/src/fuzzy_search_bolt.dart';
 
-class FuzzyBoltIsolate {
-  static Future<List<Map<String, dynamic>>> searchWithIsolate({
+mixin IsolateSearch {
+  Future<List<Map<String, dynamic>>> searchWithIsolate({
     required List<String> dataset,
     required String query,
-    required double strictThreshold,
-    required double typoThreshold,
+    double? strictThreshold,
+    double? typoThreshold,
   }) async {
+
     final receivePort = ReceivePort();
     await Isolate.spawn(
       _searchIsolate,
@@ -25,8 +26,8 @@ class FuzzyBoltIsolate {
     double typoThreshold = args[4];
 
     List<Map<String, dynamic>> results = await FuzzyBolt().search(
-      dataset: dataset,
-      query: query,
+      dataset: dataset.map((e)=> e.toLowerCase()).toList(),
+      query: query.toLowerCase(),
       strictThreshold: strictThreshold,
       typoThreshold: typoThreshold,
     );

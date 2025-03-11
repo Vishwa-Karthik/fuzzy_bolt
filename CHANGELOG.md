@@ -1,5 +1,25 @@
 ## Changelog
 
+### [1.1.2] - 2025-03-11
+
+#### Changed
+
+- Enhanced stream-based fuzzy search for improved responsiveness.
+- Optimized event handling to ensure seamless updates when queries change.
+- Improved case-insensitive matching for better search accuracy.
+
+#### Fixed
+
+- Resolved issue where empty search results were not emitted correctly.
+- Addressed inconsistencies in asynchronous search streaming.
+- Fine-tuned ranking algorithm for better precision in result ordering.
+
+#### Added
+
+- Introduced unit tests for stream-based search to ensure reliability.
+- Expanded debug logging to assist with troubleshooting and performance tuning.
+- Added support for wildcard searches to broaden query flexibility.
+
 ### [1.0.2] - 2025-03-10
 #### Changed
 - Refactored project structure to align with **SOLID principles**.

@@ -26,7 +26,7 @@ Then, run:
 dart pub get
 ```
 
-## 📖 Usage
+## 📖Normal Search Usage
 
 ```dart
 import 'package:fuzzy_bolt/fuzzy_bolt.dart';
@@ -43,7 +43,7 @@ void main() async {
 
 ### 🛠 Output Example:
 
-```
+```bash
 psychology (Score: 0.92)  ✅  (Fixes minor spelling mistake)
 philosophy (Score: 0.75)  ❌  (Less relevant but somewhat similar)
 
@@ -58,6 +58,64 @@ Future<List<Map<String, dynamic>>> search({
   required double strictThreshold,
   required double typoThreshold,
 })
+```
+
+## 📖 Stream Based Search
+
+```dart
+import 'package:fuzzy_bolt/fuzzy_bolt.dart';
+
+void main() async {
+  final queryController = StreamController<String>();
+  final searchStream = fuzzyBolt.streamSearch(
+    dataset: ["apple", "banana", "berry", "grape", "pineapple"],
+    query: queryController.stream,
+  );
+
+  searchStream.listen((results) {
+    print(results);
+  });
+
+  queryController.add("b");
+  queryController.add("be");
+  queryController.add("ber");
+  queryController.add("berr");
+  queryController.add("berry");
+}
+
+```
+### 🛠 Output Example:
+
+```bash
+🚀 Running Stream-Based Search...
+
+⌨️ Typing: 'b'
+🔄 Stream Update:
+   🔹 banana (Score: 0.750)
+   🔹 blueberry (Score: 0.733)
+   🔹 blackberry (Score: 0.730)
+
+⌨️ Typing: 'be'
+🔄 Stream Update:
+   🔹 blueberry (Score: 0.767)
+
+⌨️ Typing: 'ber'
+🔄 Stream Update:
+   🔹 blueberry (Score: 0.667)
+   🔹 tangerine (Score: 0.630)
+   🔹 watermelon (Score: 0.622)
+   🔹 pomegranate (Score: 0.616)
+
+⌨️ Typing: 'berr'
+🔄 Stream Update:
+   🔹 blueberry (Score: 0.725)
+   🔹 blackberry (Score: 0.610)
+
+⌨️ Typing: 'berry'
+🔄 Stream Update:
+   🔹 blueberry (Score: 0.680)
+   🔹 raspberry (Score: 0.444)
+🏁 Stream-based search completed.
 ```
 
 | Parameter          | Type     | Description |
