@@ -10,7 +10,7 @@ class SearchImpl with LocalSearch, IsolateSearch {
     double? typoThreshold,
   }) async {
     try {
-      if (dataset.length > 1000) {
+      if (dataset.length > Constants.isolateThreshold) {
         return searchWithIsolate(
           dataset: dataset,
           query: query,

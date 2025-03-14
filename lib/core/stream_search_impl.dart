@@ -56,7 +56,7 @@ class StreamSearchImpl with LocalSearch, IsolateSearch {
     required double strictThreshold,
     required double typoThreshold,
   }) async {
-    if (dataset.length > 1000) {
+    if (dataset.length > Constants.isolateThreshold) {
       return searchWithIsolate(
         dataset: dataset,
         query: query,

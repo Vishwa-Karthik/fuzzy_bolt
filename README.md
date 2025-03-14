@@ -1,17 +1,20 @@
-# FuzzyBolt 🔥
+# Fuzzy Bolt
 
-**A powerful and optimized fuzzy search algorithm with typo tolerance and ranking.**
+**An advanced Fuzzy Search Algorithm with intelligent typo correction, adaptive ranking, and lightning-fast performance.**
 
 [![pub package](https://img.shields.io/pub/v/fuzzy_bolt.svg)](https://pub.dev/packages/fuzzy_bolt)
 [![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-blue)](LICENSE)
 
-## Features
-✅ **Blazing Fast Performance** 🚀  
-✅ **Advanced String Matching with Jaro-Winkler & Levenshtein Distance**  
-✅ **Ideal for Autocomplete, Search Bars, and Query Refinement**  
-✅ **Asynchronous & Optimized for Large Datasets**
+## Why Fuzzy Bolt ??
+*I've found many packages that just purely does the fuzzy search job but haven't encountered that deals with typo/error in query automatically.
 
-## 📦 Installation
++ Uses [Jaro–Winkler Distance](https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance) for ranking the results.
++ Uses [Levenshtein Distance](https://en.wikipedia.org/wiki/Levenshtein_distance) to handle the typo errors in the query if any.
++ Automatically switch to host's [Isolate](https://dart.dev/language/isolates) mechanism if the dataset becomes huge. (Right now capped at dataset length to 500)
++ Allow developers to set their threshold on results for better accuracy.
+
+
+## Installation
 
 Add FuzzyBolt to your `pubspec.yaml`:
 
@@ -26,7 +29,7 @@ Then, run:
 dart pub get
 ```
 
-## 📖Normal Search Usage
+## Normal Search Usage
 
 ```dart
 import 'package:fuzzy_bolt/fuzzy_bolt.dart';
@@ -41,7 +44,7 @@ void main() async {
 }
 ```
 
-### 🛠 Output Example:
+### Output Example:
 
 ```bash
 psychology (Score: 0.92)  ✅  (Fixes minor spelling mistake)
@@ -49,18 +52,18 @@ philosophy (Score: 0.75)  ❌  (Less relevant but somewhat similar)
 
 ```
 
-## ⚡ API Reference
+## API Reference
 
 ```dart
 Future<List<Map<String, dynamic>>> search({
   required List<String> dataset,
   required String query,
-  required double strictThreshold,
-  required double typoThreshold,
+  double? strictThreshold,
+  double? typoThreshold,
 })
 ```
 
-## 📖 Stream Based Search
+## Stream Based Search
 
 ```dart
 import 'package:fuzzy_bolt/fuzzy_bolt.dart';
@@ -84,7 +87,7 @@ void main() async {
 }
 
 ```
-### 🛠 Output Example:
+### Output Example:
 
 ```bash
 🚀 Running Stream-Based Search...
@@ -117,6 +120,16 @@ void main() async {
    🔹 raspberry (Score: 0.444)
 🏁 Stream-based search completed.
 ```
+## API Reference
+
+```dart
+Stream<List<Map<String, dynamic>>> streamSearch({
+    required List<String> dataset,
+    required Stream<String> query,
+    double? strictThreshold,
+    double? typoThreshold,
+  });
+```
 
 | Parameter          | Type     | Description |
 |------------------|---------|-------------|
@@ -125,14 +138,7 @@ void main() async {
 | `strictThreshold` | `double` | Minimum Jaro-Winkler similarity score required for a match. |
 | `typoThreshold`  | `double` | Minimum Damerau-Levenshtein distance score required for a match. |
 
-## 📚 Use Cases
-
-✅ **Search & Auto-Suggestions** - Enhance search bars with intelligent suggestions.  
-✅ **Spell Checking** - Detect and correct minor spelling errors.  
-✅ **Command Line Interfaces** - Improve fuzzy matching in CLI applications.  
-✅ **Data Deduplication** - Identify similar records in datasets.  
-
-## 🔥 Platform Support
+## Platform Support
 
 | Platform  | Supported |
 |-----------|----------|
@@ -144,7 +150,7 @@ void main() async {
 | Web       | ❌ No |
 
 **Why no Web support?**  
-FuzzyBolt uses Dart isolates for parallel computation, which are **not supported on Flutter Web**.  I'll eventually enhance a fallback mechanism which leverages **Web Workers** for web platform.
+*FuzzyBolt uses Dart isolates for parallel computation, which are **not supported on Flutter Web**.  I'll eventually enhance a fallback mechanism which leverages **Web Workers** for web platform.*
 
 ## 🔬 Running Tests
 
@@ -154,23 +160,3 @@ To run tests, use:
 dart test
 test/fuzzy_bolt_test.dart
 ```
-
-## 📜 License
-
-This package is licensed under the **BSD-3-Clause License**. See the [LICENSE](LICENSE) file for details.
-
-## ❤️ Contributing
-
-We welcome contributions! If you'd like to improve FuzzyBolt:
-- Open an issue on [GitHub](https://github.com/Vishwa-Karthik/fuzzy_bolt/issues)
-- Submit a pull request
-- Suggest new features or report bugs
-
-## 💬 Questions?
-
-If you have any questions, feel free to open a discussion on GitHub or raise an issue.
-
-🌟 **Like this package? Star it on GitHub!** ⭐
-
-
-## 🔹 Made with ❤️ by Vishwa Karthik.
