@@ -1,5 +1,14 @@
 ## Changelog
 
+### [1.1.3] - 2025-03-14
+
+#### Added
+- Updated Documentation
+
+#### Changed
+- Enhanced the search and ranking algorithm for better performance.
+- Reduced Isolate fall back dependency from 1000 length to 500.
+
 ### [1.1.2] - 2025-03-11
 
 #### Changed
