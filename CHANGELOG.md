@@ -1,5 +1,11 @@
 ## Changelog
 
+### [1.1.4] - 2025-03-16
+
+#### Changed
+- Dart SDK Version conflict resolved
+- Updated readme for better understanding
+
 ### [1.1.3] - 2025-03-14
 
 #### Added
