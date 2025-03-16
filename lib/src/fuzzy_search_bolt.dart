@@ -1,5 +1,6 @@
 import 'package:fuzzy_bolt/core/search_impl.dart';
 import 'package:fuzzy_bolt/core/stream_search_impl.dart';
+import 'package:fuzzy_bolt/utils/constants.dart';
 
 sealed class FuzzyBoltSearch {
   Future<List<Map<String, dynamic>>> search({
@@ -29,8 +30,8 @@ class FuzzyBolt implements FuzzyBoltSearch {
       return await SearchImpl().search(
         dataset: dataset,
         query: query,
-        strictThreshold: strictThreshold,
-        typoThreshold: typoThreshold,
+        strictThreshold: strictThreshold ?? Constants.defaultStrictThreshold,
+        typoThreshold: typoThreshold ?? Constants.defaultTypoThreshold,
       );
     } catch (e) {
       throw Exception(e);
@@ -48,8 +49,8 @@ class FuzzyBolt implements FuzzyBoltSearch {
       yield* StreamSearchImpl().streamSearch(
         dataset: dataset,
         query: query,
-        strictThreshold: strictThreshold,
-        typoThreshold: typoThreshold,
+        strictThreshold: strictThreshold ?? Constants.defaultStrictThreshold,
+        typoThreshold: typoThreshold ?? Constants.defaultTypoThreshold,
       );
     } catch (e) {
       throw Exception(e);

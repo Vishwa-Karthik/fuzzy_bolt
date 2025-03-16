@@ -131,13 +131,6 @@ Stream<List<Map<String, dynamic>>> streamSearch({
   });
 ```
 
-| Parameter          | Type     | Description |
-|------------------|---------|-------------|
-| `dataset`        | `List<String>` | The list of items to search through. |
-| `query`          | `String` | The search term entered by the user. |
-| `strictThreshold` | `double` | Minimum Jaro-Winkler similarity score required for a match. |
-| `typoThreshold`  | `double` | Minimum Damerau-Levenshtein distance score required for a match. |
-
 ## Platform Support
 
 | Platform  | Supported |

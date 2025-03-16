@@ -1,5 +1,5 @@
 class Constants {
-  static const double strictThreshold = 0.7;
-  static const double typoThreshold = 0.5;
+  static const double defaultStrictThreshold = 0.7;
+  static const double defaultTypoThreshold = 0.5;
   static const int isolateThreshold = 500;
 }

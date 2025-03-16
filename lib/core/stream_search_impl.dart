@@ -30,8 +30,8 @@ class StreamSearchImpl with LocalSearch, IsolateSearch {
         final result = await _performSearch(
           dataset: dataset,
           query: inputQuery,
-          strictThreshold: strictThreshold ?? Constants.strictThreshold,
-          typoThreshold: typoThreshold ?? Constants.typoThreshold,
+          strictThreshold: strictThreshold ?? Constants.defaultStrictThreshold,
+          typoThreshold: typoThreshold ?? Constants.defaultTypoThreshold,
         );
 
         if (!_controller.isClosed) {
@@ -53,22 +53,22 @@ class StreamSearchImpl with LocalSearch, IsolateSearch {
   Future<List<Map<String, dynamic>>> _performSearch({
     required List<String> dataset,
     required String query,
-    required double strictThreshold,
-    required double typoThreshold,
+    double? strictThreshold,
+    double? typoThreshold,
   }) async {
     if (dataset.length > Constants.isolateThreshold) {
       return searchWithIsolate(
         dataset: dataset,
         query: query,
-        strictThreshold: strictThreshold,
-        typoThreshold: typoThreshold,
+        strictThreshold: strictThreshold ?? Constants.defaultStrictThreshold,
+        typoThreshold: typoThreshold ?? Constants.defaultTypoThreshold,
       );
     } else {
       return searchLocally(
         dataset: dataset,
         query: query,
-        strictThreshold: strictThreshold,
-        typoThreshold: typoThreshold,
+        strictThreshold: strictThreshold ?? Constants.defaultStrictThreshold,
+        typoThreshold: typoThreshold ?? Constants.defaultTypoThreshold,
       );
     }
   }

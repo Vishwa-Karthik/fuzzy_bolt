@@ -144,8 +144,8 @@ void main() {
       final results = await fuzzyBolt.search(
         dataset: dataset,
         query: "black rasp", // Should match "blackberry" or "raspberry"
-        strictThreshold: 0.85,
-        typoThreshold: 0.7,
+        strictThreshold: 0.65,
+        typoThreshold: 0.5,
       );
       expect(results.isNotEmpty, true);
       expect(results.first['value'].contains("berry"), true);

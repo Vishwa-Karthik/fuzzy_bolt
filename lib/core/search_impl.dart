@@ -14,15 +14,15 @@ class SearchImpl with LocalSearch, IsolateSearch {
         return searchWithIsolate(
           dataset: dataset,
           query: query,
-          strictThreshold: strictThreshold ?? Constants.strictThreshold,
-          typoThreshold: typoThreshold ?? Constants.strictThreshold,
+          strictThreshold: strictThreshold ?? Constants.defaultStrictThreshold,
+          typoThreshold: typoThreshold ?? Constants.defaultStrictThreshold,
         );
       } else {
         return searchLocally(
           dataset: dataset,
           query: query,
-          strictThreshold: strictThreshold ?? Constants.strictThreshold,
-          typoThreshold: typoThreshold ?? Constants.strictThreshold,
+          strictThreshold: strictThreshold ?? Constants.defaultStrictThreshold,
+          typoThreshold: typoThreshold ?? Constants.defaultStrictThreshold,
         );
       }
     } catch (e) {

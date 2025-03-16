@@ -12,7 +12,7 @@ homepage: https://github.com/Vishwa-Karthik/fuzzy_bolt
 issue_tracker: https://github.com/Vishwa-Karthik/fuzzy_bolt/issues
 
 environment:
-  sdk: ">=3.0.0 <=3.7.1"
+  sdk: ^3.7.2
 
 platforms:
   android:
@@ -23,9 +23,9 @@ platforms:
 
 topics:
   - fuzzy-search
-  - search
+  - search-ranking
   - text-processing
-  - autocomplete
+  - auto-suggestions
   - ranking
 
 dependencies:

@@ -22,7 +22,7 @@ mixin LocalSearch {
     required double strictThreshold,
     required double typoThreshold,
   }) {
-    try {
+    try { 
       List<Map<String, dynamic>> results = [];
 
       for (var item in dataset) {
