@@ -22,7 +22,7 @@ mixin LocalSearch {
     required double strictThreshold,
     required double typoThreshold,
   }) {
-    try { 
+    try {
       List<Map<String, dynamic>> results = [];
 
       for (var item in dataset) {
@@ -33,9 +33,10 @@ mixin LocalSearch {
         int typoDistance = levensteinDistance(s1: lowerItem, s2: lowerQuery);
         double typoScore = 1 - (typoDistance / lowerItem.length);
 
-        double rank = strictScore > strictThreshold
-            ? strictScore
-            : typoScore > typoThreshold
+        double rank =
+            strictScore > strictThreshold
+                ? strictScore
+                : typoScore > typoThreshold
                 ? typoScore * 0.8
                 : 0.0;
 

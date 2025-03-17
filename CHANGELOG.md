@@ -1,5 +1,11 @@
 ## Changelog
 
+### [1.1.5] - 2025-03-16
+
+#### Changed
+- Updated readme for better documentation
+- Project level indentation and formatter
+
 ### [1.1.4] - 2025-03-16
 
 #### Changed

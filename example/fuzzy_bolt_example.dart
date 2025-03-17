@@ -23,7 +23,7 @@ void main() async {
     "lemon",
     "lime",
     "orange",
-    "tangerine"
+    "tangerine",
   ];
 
   List<Map<String, dynamic>> testCases = [
@@ -31,7 +31,7 @@ void main() async {
     {"query": "mengo", "strict": 0.85, "typo": 0.6}, // Close Phonetic Match
     {"query": "berry", "strict": 0.6, "typo": 0.5}, // Partial Match
     {"query": "PINEAPPLE", "strict": 0.9, "typo": 0.8}, // Case Insensitivity
-    {"query": "pomgranate", "strict": 0.8, "typo": 0.6} // Complex Typo
+    {"query": "pomgranate", "strict": 0.8, "typo": 0.6}, // Complex Typo
   ];
 
   // ✅ Standard Search Test
@@ -57,22 +57,23 @@ void main() async {
   final StreamController<String> queryStreamController =
       StreamController<String>();
 
-  final Stream<List<Map<String, dynamic>>> searchResults =
-      FuzzyBolt().streamSearch(
-    dataset: dataset,
-    query: queryStreamController.stream,
-    strictThreshold: 0.6,
-    typoThreshold: 0.5,
-  );
+  final Stream<List<Map<String, dynamic>>> searchResults = FuzzyBolt()
+      .streamSearch(
+        dataset: dataset,
+        query: queryStreamController.stream,
+        strictThreshold: 0.6,
+        typoThreshold: 0.5,
+      );
 
   // Listen for search results
-  final StreamSubscription<List<Map<String, dynamic>>> subscription =
-      searchResults.listen(
+  final StreamSubscription<List<Map<String, dynamic>>>
+  subscription = searchResults.listen(
     (results) {
       print("🔄 Stream Update:");
       for (var res in results) {
         print(
-            "   🔹 ${res['value']} (Score: ${res['rank'].toStringAsFixed(3)})");
+          "   🔹 ${res['value']} (Score: ${res['rank'].toStringAsFixed(3)})",
+        );
       }
     },
     onError: (error) => print("⚠️ Stream Error: $error"),

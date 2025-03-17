@@ -24,10 +24,13 @@ mixin IsolateSearch {
     double? typoThreshold,
   }) async {
     final receivePort = ReceivePort();
-    await Isolate.spawn(
-      _searchIsolate,
-      [receivePort.sendPort, dataset, query, strictThreshold, typoThreshold],
-    );
+    await Isolate.spawn(_searchIsolate, [
+      receivePort.sendPort,
+      dataset,
+      query,
+      strictThreshold,
+      typoThreshold,
+    ]);
     return await receivePort.first;
   }
 

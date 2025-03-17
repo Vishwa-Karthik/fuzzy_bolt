@@ -19,10 +19,7 @@
 /// ### Edge Cases:
 /// - If `source` or `s2` is empty, the function returns the length of the other string.
 /// - If both strings are identical, returns `0`.
-int levensteinDistance({
-  required String s1,
-  required String s2,
-}) {
+int levensteinDistance({required String s1, required String s2}) {
   try {
     int len1 = s1.length;
     int len2 = s2.length;
@@ -32,8 +29,10 @@ int levensteinDistance({
     if (len2 == 0) return len1;
 
     // 2D list to store distances.
-    List<List<int>> dp =
-        List.generate(len1 + 1, (_) => List.filled(len2 + 1, 0));
+    List<List<int>> dp = List.generate(
+      len1 + 1,
+      (_) => List.filled(len2 + 1, 0),
+    );
 
     // Initialize the first row and column.
     for (int i = 0; i <= len1; i++) {

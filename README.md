@@ -5,8 +5,18 @@
 [![pub package](https://img.shields.io/pub/v/fuzzy_bolt.svg)](https://pub.dev/packages/fuzzy_bolt)
 [![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-blue)](LICENSE)
 
+## Table of Contents
+- [Why Fuzzy Bolt?](#why-fuzzy-bolt)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Normal Search](#normal-search-usage)
+  - [Stream Based Search](#stream-based-search)
+- [API Reference](#api-reference)
+- [Platform Support](#platform-support)
+- [Running Tests](#running-tests)
+
 ## Why Fuzzy Bolt ??
-*I've found many packages that just purely does the fuzzy search job but haven't encountered that deals with typo/error in query automatically.
+*I've found many packages that just purely does the fuzzy search job but haven't encountered that deals with typo/error in query automatically.*
 
 + Uses [Jaro–Winkler Distance](https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance) for ranking the results.
 + Uses [Levenshtein Distance](https://en.wikipedia.org/wiki/Levenshtein_distance) to handle the typo errors in the query if any.
@@ -145,7 +155,7 @@ Stream<List<Map<String, dynamic>>> streamSearch({
 **Why no Web support?**  
 *FuzzyBolt uses Dart isolates for parallel computation, which are **not supported on Flutter Web**.  I'll eventually enhance a fallback mechanism which leverages **Web Workers** for web platform.*
 
-## 🔬 Running Tests
+## Running Tests
 
 To run tests, use:
 

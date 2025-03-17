@@ -37,7 +37,7 @@ void main() {
       "fig",
       "date",
       "passionfruit",
-      "jackfruit"
+      "jackfruit",
     ];
   });
 

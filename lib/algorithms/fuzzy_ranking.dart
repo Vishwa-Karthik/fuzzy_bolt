@@ -67,7 +67,8 @@ double jaroWinklerDistance({required String s1, required String s2}) {
     }
 
     // Compute Jaro similarity.
-    double jaro = ((matches / s1.length) +
+    double jaro =
+        ((matches / s1.length) +
             (matches / s2.length) +
             ((matches - transpositions ~/ 2) / matches)) /
         3.0;
@@ -84,6 +85,6 @@ double jaroWinklerDistance({required String s1, required String s2}) {
     return jaroWinkler;
   } catch (e) {
     print("Error computing Jaro-Winkler similarity: $e");
-    return -1.0; 
+    return -1.0;
   }
 }
