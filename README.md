@@ -6,7 +6,8 @@
 [![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-blue)](LICENSE)
 
 ## Table of Contents
-- [Why Fuzzy Bolt?](#why-fuzzy-bolt)
+- [Why Fuzzy Bolt?](#why-fuzzy-bolt-??)
+- [Use Case Applications](#Use-Case-Applications)
 - [Installation](#installation)
 - [Usage](#usage)
   - [Normal Search](#normal-search-usage)
@@ -15,14 +16,39 @@
 - [Platform Support](#platform-support)
 - [Running Tests](#running-tests)
 
+
+
 ## Why Fuzzy Bolt ??
 *I've found many packages that just purely does the fuzzy search job but haven't encountered that deals with typo/error in query automatically.*
 
 + Uses [Jaro–Winkler Distance](https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance) for ranking the results.
 + Uses [Levenshtein Distance](https://en.wikipedia.org/wiki/Levenshtein_distance) to handle the typo errors in the query if any.
-+ Automatically switch to host's [Isolate](https://dart.dev/language/isolates) mechanism if the dataset becomes huge. (Right now capped at dataset length to 500)
++ Leverage host's [Isolate](https://dart.dev/language/isolates) mechanism if the dataset becomes huge. (Right now capped at dataset length to 500)
++ Automatically switch to non-isolate fallback mechanim for Web platform.
 + Allow developers to set their threshold on results for better accuracy.
 
+## Use Case Applications
+
+- **Local Database Search**:
+Perfect for running fuzzy queries directly on local datasets like SQLite, Hive, or Isar.
+
+- **Post-API Result Search**:
+Enhance your UX by adding an extra layer of fuzzy search after fetching data from remote APIs.
+
+- **In-Memory State Search**:
+Great for filtering and ranking results from app state (e.g in-memory lists, BLoC/Cubit states, Provider data, etc.).
+
+- **Search Bars & Autocomplete Fields**:
+Supercharge your TextField or SearchDelegate with typo-tolerant and intent-aware results.
+
+- **Offline-First Applications**:
+Helpful in apps that prioritize offline functionality and require local, fast search.
+
+- **Data Cleaning & Record Linking**:
+Use it for fuzzy matching and deduplication tasks (e.g., merging similar records in datasets).
+
+- **Command Palette / Quick Actions Search**:
+Perfect for developer tools or admin dashboards where users trigger commands via text input.
 
 ## Installation
 
@@ -41,6 +67,19 @@ dart pub get
 
 ## Normal Search Usage
 
+### API Reference
+
+```dart
+Future<List<Map<String, dynamic>>> search({
+  required List<String> dataset,
+  required String query,
+  double? strictThreshold,
+  double? typoThreshold,
+  bool? kIsWeb,
+})
+```
+
+### Example
 ```dart
 import 'package:fuzzy_bolt/fuzzy_bolt.dart';
 
@@ -50,6 +89,7 @@ void main() async {
   query: "phsychology", // Typo: "phsychology" instead of "psychology"
   strictThreshold: 0.8,
   typoThreshold: 0.7,
+  kIsWeb: false,
 );
 }
 ```
@@ -62,19 +102,23 @@ philosophy (Score: 0.75)  ❌  (Less relevant but somewhat similar)
 
 ```
 
-## API Reference
 
-```dart
-Future<List<Map<String, dynamic>>> search({
-  required List<String> dataset,
-  required String query,
-  double? strictThreshold,
-  double? typoThreshold,
-})
-```
 
 ## Stream Based Search
 
+### API Reference
+
+```dart
+Stream<List<Map<String, dynamic>>> streamSearch({
+    required List<String> dataset,
+    required Stream<String> query,
+    double? strictThreshold,
+    double? typoThreshold,
+    bool? kIsWeb,
+  });
+```
+
+### Example
 ```dart
 import 'package:fuzzy_bolt/fuzzy_bolt.dart';
 
@@ -130,16 +174,6 @@ void main() async {
    🔹 raspberry (Score: 0.444)
 🏁 Stream-based search completed.
 ```
-## API Reference
-
-```dart
-Stream<List<Map<String, dynamic>>> streamSearch({
-    required List<String> dataset,
-    required Stream<String> query,
-    double? strictThreshold,
-    double? typoThreshold,
-  });
-```
 
 ## Platform Support
 
@@ -150,10 +184,10 @@ Stream<List<Map<String, dynamic>>> streamSearch({
 | macOS     | ✅ Yes |
 | Windows   | ✅ Yes |
 | Linux     | ✅ Yes |
-| Web       | ❌ No |
+| Web       | ✅ Yes |
 
-**Why no Web support?**  
-*FuzzyBolt uses Dart isolates for parallel computation, which are **not supported on Flutter Web**.  I'll eventually enhance a fallback mechanism which leverages **Web Workers** for web platform.*
+**Web support?**  
+*I've added fallback mechanism to use search locally without the help of Isolate mechanism since Flutter web do not support Isolates...*
 
 ## Running Tests
 

@@ -8,6 +8,7 @@ sealed class FuzzyBoltSearch {
     required String query,
     double? strictThreshold,
     double? typoThreshold,
+    bool? kIsWeb,
   });
 
   Stream<List<Map<String, dynamic>>> streamSearch({
@@ -15,6 +16,7 @@ sealed class FuzzyBoltSearch {
     required Stream<String> query,
     double? strictThreshold,
     double? typoThreshold,
+    bool? kIsWeb,
   });
 }
 
@@ -25,6 +27,7 @@ class FuzzyBolt implements FuzzyBoltSearch {
     required String query,
     double? strictThreshold,
     double? typoThreshold,
+    bool? kIsWeb,
   }) async {
     try {
       return await SearchImpl().search(
@@ -32,6 +35,7 @@ class FuzzyBolt implements FuzzyBoltSearch {
         query: query,
         strictThreshold: strictThreshold ?? Constants.defaultStrictThreshold,
         typoThreshold: typoThreshold ?? Constants.defaultTypoThreshold,
+        kIsWeb: kIsWeb ?? false,
       );
     } catch (e) {
       throw Exception(e);
@@ -44,6 +48,7 @@ class FuzzyBolt implements FuzzyBoltSearch {
     required Stream<String> query,
     double? strictThreshold,
     double? typoThreshold,
+    bool? kIsWeb,
   }) async* {
     try {
       yield* StreamSearchImpl().streamSearch(
@@ -51,6 +56,7 @@ class FuzzyBolt implements FuzzyBoltSearch {
         query: query,
         strictThreshold: strictThreshold ?? Constants.defaultStrictThreshold,
         typoThreshold: typoThreshold ?? Constants.defaultTypoThreshold,
+        kIsWeb: kIsWeb ?? false,
       );
     } catch (e) {
       throw Exception(e);

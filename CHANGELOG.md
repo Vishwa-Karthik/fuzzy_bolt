@@ -1,5 +1,14 @@
 ## Changelog
 
+### [1.1.6] - 2025-03-22
+
+#### Added
+- Added web platform support
+- Updated readme to help developers the necessity and usecase of this application
+
+#### Changed
+- Added web fallback mechanism to run without the use of Isolates
+
 ### [1.1.5] - 2025-03-16
 
 #### Changed

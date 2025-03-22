@@ -15,6 +15,7 @@ class StreamSearchImpl with LocalSearch, IsolateSearch {
     required Stream<String> query,
     double? strictThreshold,
     double? typoThreshold,
+    bool? kIsWeb,
   }) {
     _subscription?.cancel(); // Cancel any existing subscription safely
     _subscription = query.listen((inputQuery) async {
@@ -32,6 +33,7 @@ class StreamSearchImpl with LocalSearch, IsolateSearch {
           query: inputQuery,
           strictThreshold: strictThreshold ?? Constants.defaultStrictThreshold,
           typoThreshold: typoThreshold ?? Constants.defaultTypoThreshold,
+          kIsWeb: kIsWeb ?? false,
         );
 
         if (!_controller.isClosed) {
@@ -55,8 +57,9 @@ class StreamSearchImpl with LocalSearch, IsolateSearch {
     required String query,
     double? strictThreshold,
     double? typoThreshold,
+    bool? kIsWeb,
   }) async {
-    if (dataset.length > Constants.isolateThreshold) {
+    if (dataset.length > Constants.isolateThreshold && kIsWeb == false) {
       return searchWithIsolate(
         dataset: dataset,
         query: query,

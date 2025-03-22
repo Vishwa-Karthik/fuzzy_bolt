@@ -8,9 +8,10 @@ class SearchImpl with LocalSearch, IsolateSearch {
     required String query,
     double? strictThreshold,
     double? typoThreshold,
+    bool? kIsWeb,
   }) async {
     try {
-      if (dataset.length > Constants.isolateThreshold) {
+      if (dataset.length > Constants.isolateThreshold && kIsWeb == false) {
         return searchWithIsolate(
           dataset: dataset,
           query: query,

@@ -51,6 +51,31 @@ void main() async {
     print("\n");
   }
 
+  // ✅ Web Support Test
+  print("🚀 Web Support Test...");
+  for (var test in testCases) {
+    try {
+      print("🔍 Searching for: '${test["query"]}'");
+      var results = await FuzzyBolt().search(
+        dataset: dataset,
+        query: test["query"] as String,
+        strictThreshold: test["strict"] as double,
+        typoThreshold: test["typo"] as double,
+        kIsWeb: true,
+      );
+
+      print("📌 Top Results:");
+      for (var res in results) {
+        print(
+          "   🔹 ${res['value']} (Score: ${res['rank'].toStringAsFixed(3)})",
+        );
+      }
+      print("\n");
+    } catch (e) {
+      print(e);
+    }
+  }
+
   // ✅ Stream-Based Search Test
   print("🚀 Running Stream-Based Search...");
 
