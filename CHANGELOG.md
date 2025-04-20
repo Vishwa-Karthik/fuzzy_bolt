@@ -1,5 +1,10 @@
 ## Changelog
 
+### [1.1.7] - 2025-04-20
+
+#### Fixed
+- Rectified the correct export methods
+
 ### [1.1.6] - 2025-03-22
 
 #### Added

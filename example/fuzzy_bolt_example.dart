@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'package:fuzzy_bolt/src/fuzzy_search_bolt.dart';
+
+import 'package:fuzzy_bolt/fuzzy_bolt.dart';
 
 void main() async {
   List<String> dataset = [
