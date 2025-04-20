@@ -7,13 +7,21 @@
 
 ## Table of Contents
 - [Why Fuzzy Bolt?](#why-fuzzy-bolt-??)
+
 - [Use Case Applications](#Use-Case-Applications)
+
 - [Installation](#installation)
+
 - [Usage](#usage)
   - [Normal Search](#normal-search-usage)
+  - [Normal Search with Ranks](#normal-search-with-ranks)
   - [Stream Based Search](#stream-based-search)
+  - [Stream-Based Search with Ranks](#stream-based-search-with-ranks)
+
 - [API Reference](#api-reference)
+
 - [Platform Support](#platform-support)
+
 - [Running Tests](#running-tests)
 
 
@@ -23,7 +31,7 @@
 
 + Uses [Jaro–Winkler Distance](https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance) for ranking the results.
 + Uses [Levenshtein Distance](https://en.wikipedia.org/wiki/Levenshtein_distance) to handle the typo errors in the query if any.
-+ Leverage host's [Isolate](https://dart.dev/language/isolates) mechanism if the dataset becomes huge. (Right now capped at dataset length to 500)
++ Leverage host's [Isolate](https://dart.dev/language/isolates) mechanism if the dataset becomes huge.
 + Automatically switch to non-isolate fallback mechanim for Web platform.
 + Allow developers to set their threshold on results for better accuracy.
 
@@ -62,7 +70,7 @@ dependencies:
 Then, run:
 
 ```sh
-dart pub get
+flutter pub get
 ```
 
 ## Normal Search Usage
@@ -70,7 +78,7 @@ dart pub get
 ### API Reference
 
 ```dart
-Future<List<Map<String, dynamic>>> search({
+Future<List<String>> search({
   required List<String> dataset,
   required String query,
   double? strictThreshold,
@@ -84,13 +92,57 @@ Future<List<Map<String, dynamic>>> search({
 import 'package:fuzzy_bolt/fuzzy_bolt.dart';
 
 void main() async {
-  final results = await fuzzyBolt.search(
+  final results = await FuzzyBolt().search(
   dataset: ["encyclopedia", "phenomenon", "philosophy", "psychology"],
   query: "phsychology", // Typo: "phsychology" instead of "psychology"
   strictThreshold: 0.8,
   typoThreshold: 0.7,
   kIsWeb: false,
 );
+
+  results.map((e) => print(e)).toList();
+}
+```
+
+### Output Example:
+
+```bash
+psychology 
+
+philosophy 
+```
+
+## Normal Search with Ranks
+
+### API Reference
+
+```dart
+Future<List<Map<String, dynamic>>> searchWithRanks({
+  required List<String> dataset,
+  required String query,
+  double? strictThreshold,
+  double? typoThreshold,
+  bool? kIsWeb,
+})
+```
+
+### Example
+```dart
+import 'package:fuzzy_bolt/fuzzy_bolt.dart';
+
+void main() async {
+  final results = await FuzzyBolt().searchWithRanks(
+    dataset: ["encyclopedia", "phenomenon", "philosophy", "psychology"],
+    query: "phsychology", // Typo: "phsychology" instead of "psychology"
+    strictThreshold: 0.8,
+    typoThreshold: 0.7,
+    kIsWeb: false,
+  );
+
+  print("Results with ranks:");
+  for (var result in results) {
+    print("${result['value']} (Score: ${result['rank']})");
+  }
 }
 ```
 
@@ -99,7 +151,6 @@ void main() async {
 ```bash
 psychology (Score: 0.92)  ✅  (Fixes minor spelling mistake)
 philosophy (Score: 0.75)  ❌  (Less relevant but somewhat similar)
-
 ```
 
 
@@ -109,7 +160,7 @@ philosophy (Score: 0.75)  ❌  (Less relevant but somewhat similar)
 ### API Reference
 
 ```dart
-Stream<List<Map<String, dynamic>>> streamSearch({
+Stream<List<String>> streamSearch({
     required List<String> dataset,
     required Stream<String> query,
     double? strictThreshold,
@@ -173,6 +224,72 @@ void main() async {
    🔹 blueberry (Score: 0.680)
    🔹 raspberry (Score: 0.444)
 🏁 Stream-based search completed.
+```
+
+## Stream-Based Search with Ranks
+
+### API Reference
+
+```dart
+Stream<List<Map<String, dynamic>>> streamSearchWithRanks({
+    required List<String> dataset,
+    required Stream<String> query,
+    double? strictThreshold,
+    double? typoThreshold,
+    bool? kIsWeb,
+  });
+```
+
+### Example
+```dart
+import 'package:fuzzy_bolt/fuzzy_bolt.dart';
+
+void main() async {
+  final queryController = StreamController<String>();
+  final searchStream = fuzzyBolt.streamSearchWithRanks(
+    dataset: ["apple", "banana", "berry", "grape", "pineapple"],
+    query: queryController.stream,
+  );
+
+  searchStream.listen((results) {
+    print("Results with ranks:");
+    for (var result in results) {
+      print("${result['value']} (Score: ${result['rank']})");
+    }
+  });
+
+  queryController.add("b");
+  queryController.add("be");
+  queryController.add("ber");
+  queryController.add("berr");
+  queryController.add("berry");
+}
+```
+
+### Output Example:
+
+```bash
+🚀 Running Stream-Based Search with Ranks...
+
+⌨️ Typing: 'b'
+🔄 Stream Update:
+   🔹 banana (Score: 0.750)
+   🔹 blueberry (Score: 0.733)
+   🔹 blackberry (Score: 0.730)
+
+⌨️ Typing: 'be'
+🔄 Stream Update:
+   🔹 blueberry (Score: 0.767)
+
+⌨️ Typing: 'ber'
+🔄 Stream Update:
+   🔹 blueberry (Score: 0.667)
+   🔹 blackberry (Score: 0.610)
+
+⌨️ Typing: 'berry'
+🔄 Stream Update:
+   🔹 blueberry (Score: 0.680)
+   🔹 raspberry (Score: 0.444)
 ```
 
 ## Platform Support

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:fuzzy_bolt/src/fuzzy_search_bolt.dart';
+import 'package:fuzzy_bolt/src/fuzzy_bolt.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -43,7 +43,123 @@ void main() {
 
   group('FuzzyBolt Search Tests', () {
     test('Basic exact match', () async {
-      final results = await fuzzyBolt.search(
+      final List<String> results = await fuzzyBolt.search(
+        dataset: dataset,
+        query: "mango",
+        strictThreshold: 0.85,
+        typoThreshold: 0.7,
+      );
+      expect(results.isNotEmpty, true);
+      expect(results.any((test) => test == "mango"), true);
+      expect(results.any((test) => test == "mangosteen"), true);
+    });
+
+    test('Handles simple typo', () async {
+      final List<String> results = await fuzzyBolt.search(
+        dataset: dataset,
+        query: "aple", // Typo for "apple"
+        strictThreshold: 0.85,
+        typoThreshold: 0.7,
+      );
+      expect(results.isNotEmpty, true);
+      expect(results.any((test) => test == "apple"), true);
+    });
+
+    test('Handles phonetic similarity', () async {
+      final List<String> results = await fuzzyBolt.search(
+        dataset: dataset,
+        query: "mengo", // Should match "mango"
+        strictThreshold: 0.85,
+        typoThreshold: 0.7,
+      );
+      expect(results.isNotEmpty, true);
+      expect(results.any((test) => test == "mango"), true);
+    });
+
+    test('Handles case insensitivity', () async {
+      final List<String> results = await fuzzyBolt.search(
+        dataset: dataset,
+        query: "PINEAPPLE", // Should match "Pineapple"
+        strictThreshold: 0.85,
+        typoThreshold: 0.7,
+      );
+      expect(results.isNotEmpty, true);
+      expect(results.any((test) => test.toLowerCase() == "pineapple"), true);
+    });
+
+    test('Handles partial matches', () async {
+      final List<String> results = await fuzzyBolt.search(
+        dataset: dataset,
+        query: "grap", // Should match "grape", "grapefruit"
+        strictThreshold: 0.85,
+        typoThreshold: 0.7,
+      );
+      expect(results.isNotEmpty, true);
+      expect(results.any((test) => test.contains("grape")), true);
+      expect(results.any((test) => test.contains("grapefruit")), true);
+      expect(results.length, 2);
+    });
+
+    test('Handles multi-word queries', () async {
+      final List<String> results = await fuzzyBolt.search(
+        dataset: dataset,
+        query: "passion fruit", // Should match "passionfruit"
+        strictThreshold: 0.85,
+        typoThreshold: 0.7,
+      );
+      expect(results.isNotEmpty, true);
+      expect(results.any((test) => test == "passionfruit"), true);
+    });
+
+    test('Handles abbreviations', () async {
+      final List<String> results = await fuzzyBolt.search(
+        dataset: dataset,
+        query: "straw", // Should match "strawberry"
+        strictThreshold: 0.85,
+        typoThreshold: 0.7,
+      );
+      expect(results.isNotEmpty, true);
+      expect(results.any((test) => test == "strawberry"), true);
+    });
+
+    test('Handles special characters', () async {
+      final List<String> results = await fuzzyBolt.search(
+        dataset: dataset,
+        query: "avoc@do", // Should match "avocado"
+        strictThreshold: 0.85,
+        typoThreshold: 0.7,
+      );
+      expect(results.isNotEmpty, true);
+      expect(results.any((test) => test == "avocado"), true);
+    });
+
+    test('Handles no matches gracefully', () async {
+      final List<String> results = await fuzzyBolt.search(
+        dataset: dataset,
+        query: "xylophone", // Should return an empty list
+        strictThreshold: 0.85,
+        typoThreshold: 0.7,
+      );
+      expect(results.isEmpty, true);
+    });
+
+    test('Handles long and complex queries', () async {
+      final List<String> results = await fuzzyBolt.search(
+        dataset: dataset,
+        query: "black rasp", // Should match "blackberry" or "raspberry"
+        strictThreshold: 0.65,
+        typoThreshold: 0.5,
+      );
+      expect(results.isNotEmpty, true);
+      expect(results.any((test) => test.contains("blackberry")), true);
+      expect(results.any((test) => test.contains("raspberry")), true);
+      expect(results.length, 2);
+    });
+  });
+
+  group('FuzzyBolt Search Tests With Ranks', () {
+    test('Basic exact match', () async {
+      final results = await fuzzyBolt.searchWithRanks(
         dataset: dataset,
         query: "mango",
         strictThreshold: 0.85,
@@ -51,10 +167,11 @@ void main() {
       );
       expect(results.isNotEmpty, true);
       expect(results.first['value'], "mango");
+      expect(results, "mango");
     });
 
     test('Handles simple typo', () async {
-      final results = await fuzzyBolt.search(
+      final results = await fuzzyBolt.searchWithRanks(
         dataset: dataset,
         query: "aple", // Typo for "apple"
         strictThreshold: 0.85,
@@ -65,7 +182,7 @@ void main() {
     });
 
     test('Handles phonetic similarity', () async {
-      final results = await fuzzyBolt.search(
+      final results = await fuzzyBolt.searchWithRanks(
         dataset: dataset,
         query: "mengo", // Should match "mango"
         strictThreshold: 0.85,
@@ -76,7 +193,7 @@ void main() {
     });
 
     test('Handles case insensitivity', () async {
-      final results = await fuzzyBolt.search(
+      final results = await fuzzyBolt.searchWithRanks(
         dataset: dataset,
         query: "PINEAPPLE", // Should match "Pineapple"
         strictThreshold: 0.85,
@@ -87,18 +204,21 @@ void main() {
     });
 
     test('Handles partial matches', () async {
-      final results = await fuzzyBolt.search(
+      final results = await fuzzyBolt.searchWithRanks(
         dataset: dataset,
         query: "grap", // Should match "grape", "grapefruit"
         strictThreshold: 0.85,
         typoThreshold: 0.7,
       );
       expect(results.isNotEmpty, true);
-      expect(results.first['value'].contains("grap"), true);
+
+      expect(results.first['value'].contains("grape"), true);
+      expect(results[1]['value'].contains("grapefruit"), true);
+      expect(results.length, 2);
     });
 
     test('Handles multi-word queries', () async {
-      final results = await fuzzyBolt.search(
+      final results = await fuzzyBolt.searchWithRanks(
         dataset: dataset,
         query: "passion fruit", // Should match "passionfruit"
         strictThreshold: 0.85,
@@ -109,18 +229,18 @@ void main() {
     });
 
     test('Handles abbreviations', () async {
-      final results = await fuzzyBolt.search(
+      final results = await fuzzyBolt.searchWithRanks(
         dataset: dataset,
         query: "straw", // Should match "strawberry"
         strictThreshold: 0.85,
         typoThreshold: 0.7,
       );
       expect(results.isNotEmpty, true);
-      expect(results.first['value'], "Strawberry");
+      expect(results.first['value'], "strawberry");
     });
 
     test('Handles special characters', () async {
-      final results = await fuzzyBolt.search(
+      final results = await fuzzyBolt.searchWithRanks(
         dataset: dataset,
         query: "avoc@do", // Should match "avocado"
         strictThreshold: 0.85,
@@ -131,7 +251,7 @@ void main() {
     });
 
     test('Handles no matches gracefully', () async {
-      final results = await fuzzyBolt.search(
+      final results = await fuzzyBolt.searchWithRanks(
         dataset: dataset,
         query: "xylophone", // Should return an empty list
         strictThreshold: 0.85,
@@ -141,30 +261,142 @@ void main() {
     });
 
     test('Handles long and complex queries', () async {
-      final results = await fuzzyBolt.search(
+      final results = await fuzzyBolt.searchWithRanks(
         dataset: dataset,
         query: "black rasp", // Should match "blackberry" or "raspberry"
         strictThreshold: 0.65,
         typoThreshold: 0.5,
       );
       expect(results.isNotEmpty, true);
-      expect(results.first['value'].contains("berry"), true);
+      expect(results.first['value'].contains("blackberry"), true);
+      expect(results[1]['value'].contains("raspberry"), true);
+
+      expect(results.length, 2);
     });
   });
 
-  group('StreamSearch Tests', () {
-    late StreamController<String> queryController;
+  group('stream Search Tests', () {
+    test('streamSearch emits correct fuzzy results for a query', () async {
+      final results = <List<String>>[];
+      StreamController<String> queryController = StreamController<String>();
 
-    setUp(() {
-      queryController = StreamController<String>.broadcast();
+      final searchStream = FuzzyBolt().streamSearch(
+        dataset: dataset,
+        query: queryController.stream,
+      );
+
+      final subscription = searchStream.listen((event) {
+        results.add(event);
+      });
+
+      // Add query after small delay
+      await Future.delayed(Duration(milliseconds: 100));
+      queryController.add('mango');
+
+      // Allow time for async search processing
+      await Future.delayed(Duration(milliseconds: 700));
+
+      expect(results, isNotEmpty);
+      expect(results.first.any((item) => item.contains('mango')), isTrue);
+      expect(results.first, contains('mango'));
+      expect(results.first, contains('mangosteen'));
+
+      await subscription.cancel();
+      await queryController.close();
     });
 
-    tearDown(() {
-      queryController.close();
-    });
-
-    test('Basic search streaming', () async {
+    test('Handles empty query input', () async {
+      StreamController<String> queryController = StreamController<String>();
       final searchStream = fuzzyBolt.streamSearch(
+        dataset: dataset,
+        query: queryController.stream,
+      );
+
+      final results = <List<String>>[];
+      final subscription = searchStream.listen(results.add);
+
+      queryController.add("");
+      await Future.delayed(Duration(milliseconds: 500));
+
+      expect(results.isEmpty, true);
+      expect(results.length, 0);
+
+      await subscription.cancel();
+      await queryController.close();
+    });
+
+    test('Handles rapid input changes (simulating fast typing)', () async {
+      StreamController<String> queryController = StreamController<String>();
+      final searchStream = fuzzyBolt.streamSearch(
+        dataset: dataset,
+        query: queryController.stream,
+      );
+
+      final results = <List<String>>[];
+
+      final subscription = searchStream.listen(results.add);
+
+      queryController.add("gr");
+      await Future.delayed(Duration(milliseconds: 100));
+      queryController.add("gra");
+      await Future.delayed(Duration(milliseconds: 100));
+      queryController.add("grape");
+      await Future.delayed(Duration(milliseconds: 500));
+
+      expect(results.isNotEmpty, true);
+      expect(results.last.any((e) => e == 'grape'), true);
+      await subscription.cancel();
+      await queryController.close();
+    });
+
+    test('Handles case-insensitive search', () async {
+      StreamController<String> queryController = StreamController<String>();
+      final searchStream = fuzzyBolt.streamSearch(
+        dataset: dataset,
+        query: queryController.stream,
+      );
+
+      final results = <List<String>>[];
+
+      final subscription = searchStream.listen(results.add);
+
+      queryController.add("PINEAPPLE");
+      await Future.delayed(Duration(milliseconds: 500));
+
+      expect(results.isNotEmpty, true);
+      expect(results.last.any((e) => e.toLowerCase() == 'pineapple'), true);
+      await subscription.cancel();
+      await queryController.close();
+    });
+
+    test('Handles cancellation of ongoing search', () async {
+      StreamController<String> queryController = StreamController<String>();
+      final searchStream = fuzzyBolt.streamSearch(
+        dataset: dataset,
+        query: queryController.stream,
+      );
+
+      final results = <List<String>>[];
+
+      final subscription = searchStream.listen(results.add);
+
+      queryController.add("mango");
+      await Future.delayed(Duration(milliseconds: 250));
+      queryController.add("mangosteen"); // Interrupt previous search
+      await Future.delayed(Duration(milliseconds: 500));
+
+      expect(results.isNotEmpty, true);
+      expect(results.last.any((e) => e == 'mangosteen'), true);
+      await subscription.cancel();
+      await queryController.close();
+    });
+  });
+
+  group('streamSearchWithRanks Tests', () {
+    test('search streaming with ranks', () async {
+      final StreamController<String> queryController =
+          StreamController<String>();
+      final searchStream = fuzzyBolt.streamSearchWithRanks(
         dataset: dataset,
         query: queryController.stream,
       );
@@ -176,12 +408,16 @@ void main() {
       await Future.delayed(Duration(milliseconds: 500));
 
       expect(results.isNotEmpty, true);
-      expect(results.first.first['value'], "mango");
+      expect(results.last.first['value'], "mango");
       await subscription.cancel();
+      await queryController.close();
     });
 
     test('Handles empty query input', () async {
-      final searchStream = fuzzyBolt.streamSearch(
+      final StreamController<String> queryController =
+          StreamController<String>();
+
+      final searchStream = fuzzyBolt.streamSearchWithRanks(
         dataset: dataset,
         query: queryController.stream,
       );
@@ -194,10 +430,14 @@ void main() {
 
       expect(results.isEmpty, true);
       await subscription.cancel();
+      await queryController.close();
     });
 
     test('Handles rapid input changes (simulating fast typing)', () async {
-      final searchStream = fuzzyBolt.streamSearch(
+      final StreamController<String> queryController =
+          StreamController<String>();
+
+      final searchStream = fuzzyBolt.streamSearchWithRanks(
         dataset: dataset,
         query: queryController.stream,
       );
@@ -215,10 +455,14 @@ void main() {
       expect(results.isNotEmpty, true);
       expect(results.last.first['value'], "grape");
       await subscription.cancel();
+      await queryController.close();
     });
 
     test('Handles case-insensitive search', () async {
-      final searchStream = fuzzyBolt.streamSearch(
+      final StreamController<String> queryController =
+          StreamController<String>();
+
+      final searchStream = fuzzyBolt.streamSearchWithRanks(
         dataset: dataset,
         query: queryController.stream,
       );
@@ -232,10 +476,14 @@ void main() {
       expect(results.isNotEmpty, true);
       expect(results.first.first['value'].toLowerCase(), "pineapple");
       await subscription.cancel();
+      await queryController.close();
     });
 
     test('Handles cancellation of ongoing search', () async {
-      final searchStream = fuzzyBolt.streamSearch(
+      final StreamController<String> queryController =
+          StreamController<String>();
+
+      final searchStream = fuzzyBolt.streamSearchWithRanks(
         dataset: dataset,
         query: queryController.stream,
       );
@@ -251,6 +499,7 @@ void main() {
       expect(results.isNotEmpty, true);
       expect(results.last.first['value'], "mangosteen");
       await subscription.cancel();
+      await queryController.close();
     });
   });
 }
