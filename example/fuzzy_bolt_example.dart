@@ -28,6 +28,7 @@ void main() async {
   ];
 
   List<Map<String, dynamic>> testCases = [
+    {"query": "", "strict": 0.85, "typo": 0.7}, // Empty Query
     {"query": "aple", "strict": 0.85, "typo": 0.7}, // Typo Handling
     {"query": "mengo", "strict": 0.85, "typo": 0.6}, // Close Phonetic Match
     {"query": "berry", "strict": 0.6, "typo": 0.5}, // Partial Match
@@ -45,6 +46,9 @@ void main() async {
       query: test["query"] as String,
       strictThreshold: test["strict"] as double,
       typoThreshold: test["typo"] as double,
+      onError: (error, stackTrace) {
+        print("⚠️ Error: $error");
+      },
     );
 
     print("📌 Top Results:");
@@ -104,6 +108,9 @@ void main() async {
     query: queryStreamControllers.stream,
     strictThreshold: 0.6,
     typoThreshold: 0.5,
+    onError: (error, stackTrace) {
+      print("⚠️ Error: $error");
+    },
   );
 
   // Listen for search results

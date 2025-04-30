@@ -48,7 +48,7 @@ mixin LocalSearch {
       results.sort((a, b) => b['rank'].compareTo(a['rank']));
       return results;
     } catch (e) {
-      throw Exception(e);
+      rethrow;
     }
   }
 }

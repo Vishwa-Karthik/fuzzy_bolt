@@ -6,12 +6,12 @@ import 'package:fuzzy_bolt/utils/constants.dart';
 
 class StreamSearchImpl with LocalSearch, IsolateSearch {
   StreamSubscription<String>? _subscription;
-
   Completer<void>? _ongoingSearch;
 
   final StreamController<List<Map<String, dynamic>>> _controller =
       StreamController.broadcast();
 
+  /// Stream-based search for fuzzy results
   Stream<List<String>> streamSearch({
     required List<String> dataset,
     required Stream<String> query,
@@ -19,18 +19,33 @@ class StreamSearchImpl with LocalSearch, IsolateSearch {
     double? typoThreshold,
     bool? kIsWeb,
   }) {
-    final controller = StreamController<List<String>>();
-    late final StreamSubscription<String> subscription;
+    // Validate inputs
+    if (dataset.isEmpty) {
+      throw ArgumentError("Dataset cannot be empty.");
+    }
+    if (strictThreshold != null &&
+        (strictThreshold < 0 || strictThreshold > 1)) {
+      throw ArgumentError("strictThreshold must be between 0 and 1.");
+    }
+    if (typoThreshold != null && (typoThreshold < 0 || typoThreshold > 1)) {
+      throw ArgumentError("typoThreshold must be between 0 and 1.");
+    }
+
+    final controller = StreamController<List<String>>.broadcast();
 
     // Listen to incoming search terms from the query stream
-    subscription = query.listen(
+    final subscription = query.listen(
       (inputQuery) async {
         if (inputQuery.trim().isEmpty) {
-          controller.add([]);
+          // Emit an empty list for empty queries
+          if (!controller.isClosed) {
+            controller.add([]);
+          }
           return;
         }
 
         try {
+          // Perform the search
           final result = await _performSearch(
             dataset: dataset,
             query: inputQuery,
@@ -40,6 +55,7 @@ class StreamSearchImpl with LocalSearch, IsolateSearch {
             kIsWeb: kIsWeb ?? false,
           );
 
+          // Emit the search results
           if (!controller.isClosed) {
             controller.add(result);
           }
@@ -49,18 +65,19 @@ class StreamSearchImpl with LocalSearch, IsolateSearch {
           }
         }
       },
-      onError: (e, stack) {
+      onError: (e, stackTrace) {
         if (!controller.isClosed) {
-          controller.addError(e, stack);
+          controller.addError(e, stackTrace);
         }
       },
       onDone: () {
-        controller.close();
+        if (!controller.isClosed) {
+          controller.close();
+        }
       },
-      cancelOnError: false,
     );
 
-    // Ensure the search subscription is cancelled when stream is closed
+    // Ensure the subscription is canceled when the stream is closed
     controller.onCancel = () async {
       await subscription.cancel();
     };
@@ -68,6 +85,7 @@ class StreamSearchImpl with LocalSearch, IsolateSearch {
     return controller.stream;
   }
 
+  /// Stream-based search with ranked results
   Stream<List<Map<String, dynamic>>> streamSearchWithRanks({
     required List<String> dataset,
     required Stream<String> query,
@@ -75,9 +93,19 @@ class StreamSearchImpl with LocalSearch, IsolateSearch {
     double? typoThreshold,
     bool? kIsWeb,
   }) {
+    if (dataset.isEmpty) {
+      throw ArgumentError("Dataset cannot be empty.");
+    }
+
     _subscription?.cancel(); // Cancel any existing subscription safely
     _subscription = query.listen((inputQuery) async {
-      if (inputQuery.isEmpty) return;
+      if (inputQuery.trim().isEmpty) {
+        // Emit an empty list for empty queries
+        if (!_controller.isClosed) {
+          _controller.add([]);
+        }
+        throw ArgumentError("Query cannot be empty or whitespace.");
+      }
 
       // Cancel any ongoing search before starting a new one
       if (_ongoingSearch != null && !_ongoingSearch!.isCompleted) {
@@ -100,6 +128,7 @@ class StreamSearchImpl with LocalSearch, IsolateSearch {
       } catch (e, stackTrace) {
         if (!_controller.isClosed) {
           _controller.addError(e, stackTrace);
+          rethrow;
         }
       } finally {
         _ongoingSearch?.complete();
@@ -109,6 +138,7 @@ class StreamSearchImpl with LocalSearch, IsolateSearch {
     return _controller.stream;
   }
 
+  /// Perform search for non-ranked results
   Future<List<String>> _performSearch({
     required List<String> dataset,
     required String query,
@@ -135,7 +165,7 @@ class StreamSearchImpl with LocalSearch, IsolateSearch {
     }
   }
 
-  /// Determines search execution strategy (Isolate vs Local)
+  /// Perform search for ranked results
   Future<List<Map<String, dynamic>>> _performSearchWithRanks({
     required List<String> dataset,
     required String query,

@@ -123,6 +123,7 @@ Future<List<Map<String, dynamic>>> searchWithRanks({
   double? strictThreshold,
   double? typoThreshold,
   bool? kIsWeb,
+  Function(Object, StackTrace)? onError,
 })
 ```
 
@@ -137,6 +138,7 @@ void main() async {
     strictThreshold: 0.8,
     typoThreshold: 0.7,
     kIsWeb: false,
+    Function(Object, StackTrace)? onError,
   );
 
   print("Results with ranks:");
@@ -166,6 +168,7 @@ Stream<List<String>> streamSearch({
     double? strictThreshold,
     double? typoThreshold,
     bool? kIsWeb,
+    Function(Object, StackTrace)? onError,
   });
 ```
 
@@ -178,6 +181,7 @@ void main() async {
   final searchStream = fuzzyBolt.streamSearch(
     dataset: ["apple", "banana", "berry", "grape", "pineapple"],
     query: queryController.stream,
+    Function(Object, StackTrace)? onError,
   );
 
   searchStream.listen((results) {
@@ -237,6 +241,7 @@ Stream<List<Map<String, dynamic>>> streamSearchWithRanks({
     double? strictThreshold,
     double? typoThreshold,
     bool? kIsWeb,
+    Function(Object, StackTrace)? onError,
   });
 ```
 
@@ -305,6 +310,10 @@ void main() async {
 
 **Web support?**  
 *I've added fallback mechanism to use search locally without the help of Isolate mechanism since Flutter web do not support Isolates...*
+
+### Note on `streamSearch` Stability
+
+The `onError` callback in `streamSearch` is designed to handle errors gracefully. However, in certain edge cases (e.g., invalid datasets or rapidly changing queries), the behavior may be inconsistent. It is recommended to test thoroughly for your specific use case and handle errors at the application level if needed.
 
 ## Running Tests
 

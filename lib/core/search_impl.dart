@@ -10,6 +10,21 @@ class SearchImpl with LocalSearch, IsolateSearch {
     double? typoThreshold,
     bool? kIsWeb,
   }) async {
+    // Validate inputs
+    if (dataset.isEmpty) {
+      throw ArgumentError("Dataset cannot be empty.");
+    }
+    if (query.trim().isEmpty) {
+      throw ArgumentError("Query cannot be empty or whitespace.");
+    }
+    if (strictThreshold != null &&
+        (strictThreshold < 0 || strictThreshold > 1)) {
+      throw ArgumentError("strictThreshold must be between 0 and 1.");
+    }
+    if (typoThreshold != null && (typoThreshold < 0 || typoThreshold > 1)) {
+      throw ArgumentError("typoThreshold must be between 0 and 1.");
+    }
+
     try {
       if (dataset.length > Constants.isolateThreshold && kIsWeb == false) {
         final result = await searchWithIsolate(
@@ -29,7 +44,7 @@ class SearchImpl with LocalSearch, IsolateSearch {
         return result.map((e) => e['value'] as String).toList();
       }
     } catch (e) {
-      throw Exception(e);
+      rethrow;
     }
   }
 
@@ -40,6 +55,21 @@ class SearchImpl with LocalSearch, IsolateSearch {
     double? typoThreshold,
     bool? kIsWeb,
   }) async {
+    // Validate inputs
+    if (dataset.isEmpty) {
+      throw ArgumentError("Dataset cannot be empty.");
+    }
+    if (query.trim().isEmpty) {
+      throw ArgumentError("Query cannot be empty or whitespace.");
+    }
+    if (strictThreshold != null &&
+        (strictThreshold < 0 || strictThreshold > 1)) {
+      throw ArgumentError("strictThreshold must be between 0 and 1.");
+    }
+    if (typoThreshold != null && (typoThreshold < 0 || typoThreshold > 1)) {
+      throw ArgumentError("typoThreshold must be between 0 and 1.");
+    }
+
     try {
       if (dataset.length > Constants.isolateThreshold && kIsWeb == false) {
         return searchWithIsolate(
@@ -57,7 +87,7 @@ class SearchImpl with LocalSearch, IsolateSearch {
         );
       }
     } catch (e) {
-      throw Exception(e);
+      rethrow;
     }
   }
 }

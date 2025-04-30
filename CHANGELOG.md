@@ -1,5 +1,17 @@
 ## Changelog
 
+### [1.1.9] - 2025-04-30
+
+#### Added
+- Enhanced `search`, `searchWithRanks`, `streamSearch` and `streamSearchWithRanks` APIs to handle errors gracefully at the `FuzzyBolt` level.
+
+#### Fixed
+- Resolved potential hanging issues in `streamSearch` when the dataset is empty or invalid queries are provided.
+- Improved error propagation and stream cleanup to prevent indefinite waiting in test cases.
+
+#### Known Issues
+- The `onError` callback in `streamSearch` may behave inconsistently in certain edge cases. Use with caution and ensure proper testing for your specific use case.
+
 ### [1.1.8] - 2025-04-20
 
 #### Added

@@ -155,6 +155,18 @@ void main() {
       expect(results.any((test) => test.contains("raspberry")), true);
       expect(results.length, 2);
     });
+    test('Handles errors gracefully with onError callback', () async {
+      final List<String> results = await fuzzyBolt.search(
+        dataset: [], // Empty dataset to trigger an error
+        query: "mango",
+        strictThreshold: 0.85,
+        typoThreshold: 0.7,
+        onError: (error, stackTrace) {
+          expect(error.toString(), contains("Dataset cannot be empty."));
+        },
+      );
+      expect(results.isEmpty, true);
+    });
   });
 
   group('FuzzyBolt Search Tests With Ranks', () {
@@ -273,6 +285,19 @@ void main() {
 
       expect(results.length, 2);
     });
+
+    test('Handles errors gracefully with onError callback', () async {
+      final results = await fuzzyBolt.searchWithRanks(
+        dataset: [],
+        query: "mango",
+        strictThreshold: 0.85,
+        typoThreshold: 0.7,
+        onError: (error, stackTrace) {
+          expect(error.toString(), contains("Dataset cannot be empty."));
+        },
+      );
+      expect(results.isEmpty, true);
+    });
   });
 
   group('stream Search Tests', () {
@@ -389,6 +414,40 @@ void main() {
       expect(results.last.any((e) => e == 'mangosteen'), true);
       await subscription.cancel();
       await queryController.close();
+    });
+
+    test('Handles errors gracefully with onError callback', () async {
+      // Create a StreamController for the query input
+      StreamController<String> queryController = StreamController<String>();
+
+      // Call the streamSearch method with an empty dataset
+      final searchStream = fuzzyBolt.streamSearch(
+        dataset: dataset, // Empty dataset to trigger an error
+        query: queryController.stream,
+        onError: (error, stackTrace) {
+          // Verify that the error message contains the expected text
+          expect(error.toString(), contains("Dataset cannot be empty."));
+        },
+      );
+
+      final results = <List<String>>[];
+
+      // Listen to the stream
+      final subscription = searchStream.listen(results.add);
+
+      // Add an empty query to the stream
+      queryController.add("");
+
+      // Allow time for the stream to process
+      await Future.delayed(Duration(milliseconds: 500));
+
+      // Verify that no results were emitted
+      expect(results.isEmpty, true);
+
+      // Clean up
+      await subscription.cancel();
+      await queryController.close();
+      return;
     });
   });
 

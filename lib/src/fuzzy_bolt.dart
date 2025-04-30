@@ -9,6 +9,7 @@ sealed class FuzzyBoltSearch {
     double? strictThreshold,
     double? typoThreshold,
     bool? kIsWeb,
+    Function(Object, StackTrace)? onError,
   });
 
   Future<List<Map<String, dynamic>>> searchWithRanks({
@@ -17,6 +18,7 @@ sealed class FuzzyBoltSearch {
     double? strictThreshold,
     double? typoThreshold,
     bool? kIsWeb,
+    Function(Object, StackTrace)? onError,
   });
 
   Stream<List<String>> streamSearch({
@@ -25,6 +27,7 @@ sealed class FuzzyBoltSearch {
     double? strictThreshold,
     double? typoThreshold,
     bool? kIsWeb,
+    Function(Object, StackTrace)? onError,
   });
 
   Stream<List<Map<String, dynamic>>> streamSearchWithRanks({
@@ -33,6 +36,7 @@ sealed class FuzzyBoltSearch {
     double? strictThreshold,
     double? typoThreshold,
     bool? kIsWeb,
+    Function(Object, StackTrace)? onError,
   });
 }
 
@@ -44,6 +48,7 @@ class FuzzyBolt implements FuzzyBoltSearch {
     double? strictThreshold,
     double? typoThreshold,
     bool? kIsWeb,
+    Function(Object, StackTrace)? onError,
   }) async {
     try {
       return await SearchImpl().search(
@@ -53,8 +58,9 @@ class FuzzyBolt implements FuzzyBoltSearch {
         typoThreshold: typoThreshold ?? Constants.defaultTypoThreshold,
         kIsWeb: kIsWeb ?? false,
       );
-    } catch (e) {
-      throw Exception(e);
+    } catch (e, st) {
+      onError?.call("[FuzzyBolt] Error: $e", st);
+      return [];
     }
   }
 
@@ -65,6 +71,7 @@ class FuzzyBolt implements FuzzyBoltSearch {
     double? strictThreshold,
     double? typoThreshold,
     bool? kIsWeb,
+    Function(Object, StackTrace)? onError,
   }) async {
     try {
       return await SearchImpl().searchWithRanks(
@@ -74,8 +81,9 @@ class FuzzyBolt implements FuzzyBoltSearch {
         typoThreshold: typoThreshold ?? Constants.defaultTypoThreshold,
         kIsWeb: kIsWeb ?? false,
       );
-    } catch (e) {
-      throw Exception(e);
+    } catch (e, st) {
+      onError?.call("[FuzzyBolt] Error: $e", st);
+      return [];
     }
   }
 
@@ -86,6 +94,7 @@ class FuzzyBolt implements FuzzyBoltSearch {
     double? strictThreshold,
     double? typoThreshold,
     bool? kIsWeb,
+    Function(Object, StackTrace)? onError,
   }) async* {
     try {
       yield* StreamSearchImpl().streamSearch(
@@ -95,8 +104,8 @@ class FuzzyBolt implements FuzzyBoltSearch {
         typoThreshold: typoThreshold ?? Constants.defaultTypoThreshold,
         kIsWeb: kIsWeb ?? false,
       );
-    } catch (e) {
-      throw Exception(e);
+    } catch (e, st) {
+      onError?.call("[FuzzyBolt] Error: $e", st);
     }
   }
 
@@ -107,6 +116,7 @@ class FuzzyBolt implements FuzzyBoltSearch {
     double? strictThreshold,
     double? typoThreshold,
     bool? kIsWeb,
+    Function(Object, StackTrace)? onError,
   }) async* {
     try {
       yield* StreamSearchImpl().streamSearchWithRanks(
@@ -116,8 +126,9 @@ class FuzzyBolt implements FuzzyBoltSearch {
         typoThreshold: typoThreshold ?? Constants.defaultTypoThreshold,
         kIsWeb: kIsWeb ?? false,
       );
-    } catch (e) {
-      throw Exception(e);
+    } catch (e, st) {
+      onError?.call("[FuzzyBolt] Error: $e", st);
+      yield [];
     }
   }
 }
