@@ -1,5 +1,34 @@
 ## Changelog
 
+
+### [2.0.0] - 2025-09-23
+
+#### Features
+
+- **Generic Fuzzy Search API**: Works with any model `T` using configurable selectors
+- **Dual Algorithm Ranking**: Combines Jaro-Winkler and Levenshtein algorithms
+- **Adaptive Scoring**: Intelligent ranking with prefix bonuses and multi-field optimization
+- **Parallel Processing**: Automatic isolate usage for large datasets (>1000 items)
+- **Web Compatibility**: Graceful fallback for web platforms
+- **Production Ready**: Comprehensive test coverage and SOLID architecture
+
+#### Core Components
+
+- `FuzzyBolt.search<T>()` - Returns matching items directly
+- `FuzzyBolt.searchWithScores<T>()` - Returns items with similarity scores
+- `FuzzyBolt.searchWithConfig<T>()` - Advanced configuration support
+- `FuzzyResult<T>` - Rich result model with item, score, and matched text
+- `FuzzySearchConfig` - Configurable thresholds and options
+
+#### Configuration
+
+- `strictThreshold`: Control exactness matching (default: 0.85)
+- `typeThreshold`: Control typo tolerance (default: 0.65)
+- `isolateThreshold`: Dataset size for parallel processing (default: 1000)
+- `skipIsolate`: Force disable isolates for web compatibility
+- `maxResults`: Limit number of returned results
+---
+
 ### [1.1.9] - 2025-04-30
 
 #### Added
@@ -11,6 +40,8 @@
 
 #### Known Issues
 - The `onError` callback in `streamSearch` may behave inconsistently in certain edge cases. Use with caution and ensure proper testing for your specific use case.
+
+---
 
 ### [1.1.8] - 2025-04-20
 

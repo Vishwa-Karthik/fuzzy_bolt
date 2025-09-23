@@ -5,27 +5,6 @@
 [![pub package](https://img.shields.io/pub/v/fuzzy_bolt.svg)](https://pub.dev/packages/fuzzy_bolt)
 [![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-blue)](LICENSE)
 
-## Table of Contents
-- [Why Fuzzy Bolt?](#why-fuzzy-bolt-??)
-
-- [Use Case Applications](#Use-Case-Applications)
-
-- [Installation](#installation)
-
-- [Usage](#usage)
-  - [Normal Search](#normal-search-usage)
-  - [Normal Search with Ranks](#normal-search-with-ranks)
-  - [Stream Based Search](#stream-based-search)
-  - [Stream-Based Search with Ranks](#stream-based-search-with-ranks)
-
-- [API Reference](#api-reference)
-
-- [Platform Support](#platform-support)
-
-- [Running Tests](#running-tests)
-
-
-
 ## Why Fuzzy Bolt ??
 *I've found many packages that just purely does the fuzzy search job but haven't encountered that deals with typo/error in query automatically.*
 
@@ -73,229 +52,181 @@ Then, run:
 flutter pub get
 ```
 
-## Normal Search Usage
+### Basic Usage
 
-### API Reference
-
-```dart
-Future<List<String>> search({
-  required List<String> dataset,
-  required String query,
-  double? strictThreshold,
-  double? typoThreshold,
-  bool? kIsWeb,
-})
-```
-
-### Example
 ```dart
 import 'package:fuzzy_bolt/fuzzy_bolt.dart';
 
-void main() async {
-  final results = await FuzzyBolt().search(
-  dataset: ["encyclopedia", "phenomenon", "philosophy", "psychology"],
-  query: "phsychology", // Typo: "phsychology" instead of "psychology"
-  strictThreshold: 0.8,
-  typoThreshold: 0.7,
-  kIsWeb: false,
+// Your data model
+class User {
+  final String name;
+  final String email;
+
+  const User(this.name, this.email);
+}
+
+final users = [
+  const User("Alice Johnson", "alice@example.com"),
+  const User("Bob Smith", "bob@sample.com"),
+  const User("Charlie Brown", "charlie@hello.com"),
+];
+
+// Simple search - returns matching items
+final results = await FuzzyBolt.search<User>(
+  users,
+  "alice",
+  selectors: [(u) => u.name, (u) => u.email],
 );
 
-  results.map((e) => print(e)).toList();
+// Search with scores - returns items with similarity scores
+final scoredResults = await FuzzyBolt.searchWithScores<User>(
+  users,
+  "alise", // typo tolerance
+  selectors: [(u) => u.name],
+  strictThreshold: 0.85,
+  typeThreshold: 0.65,
+);
+
+for (final result in scoredResults) {
+  print("${result.item.name} -> ${(result.score * 100).toStringAsFixed(1)}% match");
 }
 ```
 
-### Output Example:
+## 📋 API Reference
 
-```bash
-psychology 
+### Core Methods
 
-philosophy 
-```
+#### `FuzzyBolt.search<T>()`
 
-## Normal Search with Ranks
-
-### API Reference
+Returns matching items directly.
 
 ```dart
-Future<List<Map<String, dynamic>>> searchWithRanks({
-  required List<String> dataset,
-  required String query,
-  double? strictThreshold,
-  double? typoThreshold,
-  bool? kIsWeb,
-  Function(Object, StackTrace)? onError,
+Future<List<T>> search<T>(
+  List<T> dataset,
+  String query, {
+  required List<String Function(T)> selectors,
+  double strictThreshold = 0.85,
+  double typeThreshold = 0.65,
+  int isolateThreshold = 1000,
+  bool skipIsolate = false,
+  int? maxResults,
 })
 ```
 
-### Example
+#### `FuzzyBolt.searchWithScores<T>()`
+
+Returns matching items with similarity scores and matched text.
+
 ```dart
-import 'package:fuzzy_bolt/fuzzy_bolt.dart';
+Future<List<FuzzyResult<T>>> searchWithScores<T>(
+  List<T> dataset,
+  String query, {
+  required List<String Function(T)> selectors,
+  double strictThreshold = 0.85,
+  double typeThreshold = 0.65,
+  int isolateThreshold = 1000,
+  bool skipIsolate = false,
+  int? maxResults,
+})
+```
 
-void main() async {
-  final results = await FuzzyBolt().searchWithRanks(
-    dataset: ["encyclopedia", "phenomenon", "philosophy", "psychology"],
-    query: "phsychology", // Typo: "phsychology" instead of "psychology"
-    strictThreshold: 0.8,
-    typoThreshold: 0.7,
-    kIsWeb: false,
-    Function(Object, StackTrace)? onError,
-  );
+#### `FuzzyBolt.searchWithConfig<T>()`
 
-  print("Results with ranks:");
-  for (var result in results) {
-    print("${result['value']} (Score: ${result['rank']})");
-  }
+Search using a configuration object for advanced control.
+
+```dart
+Future<List<FuzzyResult<T>>> searchWithConfig<T>(
+  List<T> dataset,
+  String query,
+  List<String Function(T)> selectors,
+  FuzzySearchConfig config,
+)
+```
+
+### Configuration
+
+#### `FuzzySearchConfig`
+
+Fine-tune search behavior:
+
+```dart
+final config = FuzzySearchConfig(
+  strictThreshold: 0.9,      // Higher = more exact matches required
+  typeThreshold: 0.6,        // Lower = more typo tolerance
+  isolateThreshold: 1500,    // Dataset size to trigger parallel processing
+  skipIsolate: false,        // Force disable isolates (required for web)
+  maxResults: 100,           // Limit number of results
+);
+```
+
+### Results
+
+#### `FuzzyResult<T>`
+
+Contains search result with metadata:
+
+```dart
+class FuzzyResult<T> {
+  final T item;              // Original item from dataset
+  final double score;        // Similarity score (0.0 - 1.0)
+  final String matchedText;  // Text that was matched
 }
 ```
 
-### Output Example:
+## 🔧 Advanced Usage
 
-```bash
-psychology (Score: 0.92)  ✅  (Fixes minor spelling mistake)
-philosophy (Score: 0.75)  ❌  (Less relevant but somewhat similar)
-```
+### Multi-Field Search
 
-
-
-## Stream Based Search
-
-### API Reference
+Search across multiple fields with different weights:
 
 ```dart
-Stream<List<String>> streamSearch({
-    required List<String> dataset,
-    required Stream<String> query,
-    double? strictThreshold,
-    double? typoThreshold,
-    bool? kIsWeb,
-    Function(Object, StackTrace)? onError,
-  });
-```
-
-### Example
-```dart
-import 'package:fuzzy_bolt/fuzzy_bolt.dart';
-
-void main() async {
-  final queryController = StreamController<String>();
-  final searchStream = fuzzyBolt.streamSearch(
-    dataset: ["apple", "banana", "berry", "grape", "pineapple"],
-    query: queryController.stream,
-    Function(Object, StackTrace)? onError,
-  );
-
-  searchStream.listen((results) {
-    print(results);
-  });
-
-  queryController.add("b");
-  queryController.add("be");
-  queryController.add("ber");
-  queryController.add("berr");
-  queryController.add("berry");
+class Product {
+  final String name;
+  final String category;
+  final String description;
+  // ...
 }
 
-```
-### Output Example:
-
-```bash
-🚀 Running Stream-Based Search...
-
-⌨️ Typing: 'b'
-🔄 Stream Update:
-   🔹 banana (Score: 0.750)
-   🔹 blueberry (Score: 0.733)
-   🔹 blackberry (Score: 0.730)
-
-⌨️ Typing: 'be'
-🔄 Stream Update:
-   🔹 blueberry (Score: 0.767)
-
-⌨️ Typing: 'ber'
-🔄 Stream Update:
-   🔹 blueberry (Score: 0.667)
-   🔹 tangerine (Score: 0.630)
-   🔹 watermelon (Score: 0.622)
-   🔹 pomegranate (Score: 0.616)
-
-⌨️ Typing: 'berr'
-🔄 Stream Update:
-   🔹 blueberry (Score: 0.725)
-   🔹 blackberry (Score: 0.610)
-
-⌨️ Typing: 'berry'
-🔄 Stream Update:
-   🔹 blueberry (Score: 0.680)
-   🔹 raspberry (Score: 0.444)
-🏁 Stream-based search completed.
+final results = await FuzzyBolt.searchWithScores<Product>(
+  products,
+  "laptop pro",
+  selectors: [
+    (p) => p.name,        // Primary field
+    (p) => p.category,    // Secondary field
+    (p) => p.description, // Tertiary field
+  ],
+  typeThreshold: 0.5,
+);
 ```
 
-## Stream-Based Search with Ranks
+### Performance Optimization
 
-### API Reference
+For large datasets, FuzzyBolt automatically uses isolates:
 
 ```dart
-Stream<List<Map<String, dynamic>>> streamSearchWithRanks({
-    required List<String> dataset,
-    required Stream<String> query,
-    double? strictThreshold,
-    double? typoThreshold,
-    bool? kIsWeb,
-    Function(Object, StackTrace)? onError,
-  });
+// Automatic parallel processing for datasets > 1000 items
+final results = await FuzzyBolt.search<User>(
+  largeUserList, // 10,000+ users
+  "john doe",
+  selectors: [(u) => u.name],
+  isolateThreshold: 1000, // Customize threshold
+);
 ```
 
-### Example
+## 🌐 Web Compatibility
+
+FuzzyBolt is fully web-compatible. Isolates are automatically disabled on web platforms:
+
 ```dart
-import 'package:fuzzy_bolt/fuzzy_bolt.dart';
-
-void main() async {
-  final queryController = StreamController<String>();
-  final searchStream = fuzzyBolt.streamSearchWithRanks(
-    dataset: ["apple", "banana", "berry", "grape", "pineapple"],
-    query: queryController.stream,
-  );
-
-  searchStream.listen((results) {
-    print("Results with ranks:");
-    for (var result in results) {
-      print("${result['value']} (Score: ${result['rank']})");
-    }
-  });
-
-  queryController.add("b");
-  queryController.add("be");
-  queryController.add("ber");
-  queryController.add("berr");
-  queryController.add("berry");
-}
+// Automatically detects web environment and disables isolates
+final results = await FuzzyBolt.search<User>(
+  users,
+  "search query",
+  selectors: [(u) => u.name],
+   skipIsolate: true,  // Set this to TRUE if Platform.isWeb
+);
 ```
 
-### Output Example:
-
-```bash
-🚀 Running Stream-Based Search with Ranks...
-
-⌨️ Typing: 'b'
-🔄 Stream Update:
-   🔹 banana (Score: 0.750)
-   🔹 blueberry (Score: 0.733)
-   🔹 blackberry (Score: 0.730)
-
-⌨️ Typing: 'be'
-🔄 Stream Update:
-   🔹 blueberry (Score: 0.767)
-
-⌨️ Typing: 'ber'
-🔄 Stream Update:
-   🔹 blueberry (Score: 0.667)
-   🔹 blackberry (Score: 0.610)
-
-⌨️ Typing: 'berry'
-🔄 Stream Update:
-   🔹 blueberry (Score: 0.680)
-   🔹 raspberry (Score: 0.444)
-```
 
 ## Platform Support
 
@@ -308,18 +239,4 @@ void main() async {
 | Linux     | ✅ Yes |
 | Web       | ✅ Yes |
 
-**Web support?**  
-*I've added fallback mechanism to use search locally without the help of Isolate mechanism since Flutter web do not support Isolates...*
-
-### Note on `streamSearch` Stability
-
-The `onError` callback in `streamSearch` is designed to handle errors gracefully. However, in certain edge cases (e.g., invalid datasets or rapidly changing queries), the behavior may be inconsistent. It is recommended to test thoroughly for your specific use case and handle errors at the application level if needed.
-
-## Running Tests
-
-To run tests, use:
-
-```sh
-dart test
-test/fuzzy_bolt_test.dart
-```
+**Built with ❤️ by the Dart community**
