@@ -1,5 +1,4 @@
 import 'dart:isolate';
-import 'package:meta/meta.dart';
 
 import '../interfaces/parallel_processor.dart';
 import '../models/fuzzy_result.dart';
@@ -121,7 +120,6 @@ class IsolateParallelProcessor implements ParallelProcessor {
 }
 
 /// Data class for passing search parameters to isolate.
-@immutable
 class _IsolateSearchData<T> {
   final List<SearchCandidate<T>> candidates;
   final String query;
