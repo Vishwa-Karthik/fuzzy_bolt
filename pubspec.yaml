@@ -3,7 +3,7 @@ name: fuzzy_bolt
 description: >
   A high-performance fuzzy search algorithm in Dart, designed for intelligent auto-suggestions, typo tolerance, and fast string matching.
 
-version: 2.0.0
+version: 2.0.1
 
 repository: https://github.com/Vishwa-Karthik/fuzzy_bolt
 

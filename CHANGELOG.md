@@ -1,5 +1,11 @@
 ## Changelog
 
+### [2.0.1] - 2025-10-12
+
+#### Features
+
+- **Porter Stemming**: Added stemming process to fetch clearer results
+- **Dataset Cleaning**: Clean the dataset before for efficiency
 
 ### [2.0.0] - 2025-09-23
 
