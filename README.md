@@ -1,17 +1,18 @@
 # Fuzzy Bolt
 
-**An advanced Fuzzy Search Algorithm with intelligent typo correction, adaptive ranking, and lightning-fast performance.**
+**An advanced Fuzzy Search Algorithm with intelligent typo correction, adaptive ranking, porter stemming and lightning-fast performance.**
 
 [![pub package](https://img.shields.io/pub/v/fuzzy_bolt.svg)](https://pub.dev/packages/fuzzy_bolt)
 [![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-blue)](LICENSE)
 
 ## Why Fuzzy Bolt ??
-*I've found many packages that just purely does the fuzzy search job but haven't encountered that deals with typo/error in query automatically.*
+*I’ve explored several fuzzy search packages, but haven’t found one that intelligently corrects typos in queries and performs stemming on the dataset while searching*
 
 + Uses [Jaro–Winkler Distance](https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance) for ranking the results.
 + Uses [Levenshtein Distance](https://en.wikipedia.org/wiki/Levenshtein_distance) to handle the typo errors in the query if any.
++ Uses [Porter Stemming](https://cloud.google.com/discover/what-is-stemming) process to intelligently search against the dataset.
 + Leverage host's [Isolate](https://dart.dev/language/isolates) mechanism if the dataset becomes huge.
-+ Automatically switch to non-isolate fallback mechanim for Web platform.
++ Allow developers to switch to non-isolate mechanim for Web platform - Since Isolate do not work on them.
 + Allow developers to set their threshold on results for better accuracy.
 
 ## Use Case Applications
@@ -37,206 +38,441 @@ Use it for fuzzy matching and deduplication tasks (e.g., merging similar records
 - **Command Palette / Quick Actions Search**:
 Perfect for developer tools or admin dashboards where users trigger commands via text input.
 
-## Installation
+## 📦 Installation
 
-Add FuzzyBolt to your `pubspec.yaml`:
+Add Fuzzy Bolt to your project:
 
 ```yaml
 dependencies:
-  fuzzy_bolt: <latest_version>  
+  fuzzy_bolt: ^2.0.0
 ```
 
-Then, run:
+Then grab it:
 
-```sh
-flutter pub get
+```bash
+dart pub get  # or flutter pub get
 ```
 
-### Basic Usage
+---
+
+## 🚀 Quick Start
+
+Here's the simplest way to get started:
 
 ```dart
 import 'package:fuzzy_bolt/fuzzy_bolt.dart';
 
-// Your data model
-class User {
-  final String name;
-  final String email;
-
-  const User(this.name, this.email);
-}
-
 final users = [
-  const User("Alice Johnson", "alice@example.com"),
-  const User("Bob Smith", "bob@sample.com"),
-  const User("Charlie Brown", "charlie@hello.com"),
+  User(name: 'Alice Johnson', email: 'alice@example.com'),
+  User(name: 'Bob Smith', email: 'bob@example.com'),
 ];
 
-// Simple search - returns matching items
+// Basic search - just give me the matching items
 final results = await FuzzyBolt.search<User>(
   users,
-  "alice",
-  selectors: [(u) => u.name, (u) => u.email],
-);
-
-// Search with scores - returns items with similarity scores
-final scoredResults = await FuzzyBolt.searchWithScores<User>(
-  users,
-  "alise", // typo tolerance
+  'Alise',  // Yep, typo tolerance built-in!
   selectors: [(u) => u.name],
-  strictThreshold: 0.85,
-  typeThreshold: 0.65,
 );
 
-for (final result in scoredResults) {
-  print("${result.item.name} -> ${(result.score * 100).toStringAsFixed(1)}% match");
+// Want to see how confident each match is?
+final scored = await FuzzyBolt.searchWithScores<User>(
+  users,
+  'alice',
+  selectors: [(u) => u.name],
+);
+
+for (final result in scored) {
+  print('${result.item.name}: ${(result.score * 100).toInt()}% match');
+  // Output: Alice Johnson: 100% match
 }
 ```
 
-## 📋 API Reference
+## 📖 Complete API Guide
 
-### Core Methods
+### 1. Basic Search → `FuzzyBolt.search()`
 
-#### `FuzzyBolt.search<T>()`
-
-Returns matching items directly.
+**When to use:** You just want the matching items, no extra details needed.
 
 ```dart
-Future<List<T>> search<T>(
-  List<T> dataset,
-  String query, {
-  required List<String Function(T)> selectors,
-  double strictThreshold = 0.85,
-  double typeThreshold = 0.65,
-  int isolateThreshold = 1000,
-  bool skipIsolate = false,
-  int? maxResults,
-})
-```
-
-#### `FuzzyBolt.searchWithScores<T>()`
-
-Returns matching items with similarity scores and matched text.
-
-```dart
-Future<List<FuzzyResult<T>>> searchWithScores<T>(
-  List<T> dataset,
-  String query, {
-  required List<String Function(T)> selectors,
-  double strictThreshold = 0.85,
-  double typeThreshold = 0.65,
-  int isolateThreshold = 1000,
-  bool skipIsolate = false,
-  int? maxResults,
-})
-```
-
-#### `FuzzyBolt.searchWithConfig<T>()`
-
-Search using a configuration object for advanced control.
-
-```dart
-Future<List<FuzzyResult<T>>> searchWithConfig<T>(
+Future<List<T>> FuzzyBolt.search<T>(
   List<T> dataset,
   String query,
-  List<String Function(T)> selectors,
-  FuzzySearchConfig config,
+  {
+    required List<String Function(T)> selectors,  // Tell it which fields to search
+    double strictThreshold = 0.85,     // How strict for exact matches (0.0-1.0)
+    double typeThreshold = 0.65,       // How forgiving for typos (0.0-1.0)
+    int? maxResults,                   // Cap the results
+    bool skipIsolate = false,          // Set true for web
+  }
 )
 ```
 
-### Configuration
-
-#### `FuzzySearchConfig`
-
-Fine-tune search behavior:
+**Real examples:**
 
 ```dart
-final config = FuzzySearchConfig(
-  strictThreshold: 0.9,      // Higher = more exact matches required
-  typeThreshold: 0.6,        // Lower = more typo tolerance
-  isolateThreshold: 1500,    // Dataset size to trigger parallel processing
-  skipIsolate: false,        // Force disable isolates (required for web)
-  maxResults: 100,           // Limit number of results
+// Simple name search
+final results = await FuzzyBolt.search<User>(
+  users,
+  'alice',
+  selectors: [(u) => u.name],
+);
+
+// Search across multiple fields (name, email, department, etc.)
+final results = await FuzzyBolt.search<Product>(
+  products,
+  'running shoes',
+  selectors: [(p) => p.name, (p) => p.description, (p) => p.category],
+);
+
+// Just give me the top 5 results
+final top5 = await FuzzyBolt.search<User>(
+  users,
+  'john',
+  selectors: [(u) => u.name],
+  maxResults: 5,
 );
 ```
 
-### Results
+---
 
-#### `FuzzyResult<T>`
+### 2. Search With Scores → `FuzzyBolt.searchWithScores()`
 
-Contains search result with metadata:
+**When to use:** You need to show users how confident each match is, or rank results.
+
+```dart
+Future<List<FuzzyResult<T>>> FuzzyBolt.searchWithScores<T>(
+  List<T> dataset,
+  String query,
+  {
+    required List<String Function(T)> selectors,
+    double strictThreshold = 0.85,
+    double typeThreshold = 0.65,
+    int? maxResults,
+  }
+)
+```
+
+**What you get back:**
 
 ```dart
 class FuzzyResult<T> {
-  final T item;              // Original item from dataset
-  final double score;        // Similarity score (0.0 - 1.0)
-  final String matchedText;  // Text that was matched
+  final T item;              // Your original item
+  final double score;        // How well it matched: 0.0 (terrible) to 1.0 (perfect)
+  final String matchedText;  // The actual text that matched
 }
 ```
 
-## 🔧 Advanced Usage
-
-### Multi-Field Search
-
-Search across multiple fields with different weights:
+**Example:**
 
 ```dart
-class Product {
-  final String name;
-  final String category;
-  final String description;
-  // ...
-}
-
 final results = await FuzzyBolt.searchWithScores<Product>(
   products,
-  "laptop pro",
-  selectors: [
-    (p) => p.name,        // Primary field
-    (p) => p.category,    // Secondary field
-    (p) => p.description, // Tertiary field
-  ],
-  typeThreshold: 0.5,
+  'runing shos',  // Multiple typos? No problem!
+  selectors: [(p) => p.name],
+);
+
+for (final result in results) {
+  final confidence = (result.score * 100).toStringAsFixed(1);
+  print('${result.item.name} - $confidence% match');
+}
+// Output:
+// Running Shoes Pro - 87.5% match
+// Walking Shoes - 65.2% match
+```
+
+---
+
+### 3. Search With Config → `FuzzyBolt.searchWithConfig()`
+
+**When to use:** You need fine-tuned control over how the search behaves.
+
+```dart
+final strictConfig = FuzzySearchConfig(
+  strictThreshold: 0.95,  // Very picky about matches
+  typeThreshold: 0.85,    // Don't be too forgiving with typos
+  maxResults: 10,
+);
+
+final results = await FuzzyBolt.searchWithConfig<Product>(
+  products,
+  'iPhone 15',
+  [(p) => p.name],
+  strictConfig,
 );
 ```
 
-### Performance Optimization
+---
 
-For large datasets, FuzzyBolt automatically uses isolates:
+### 4. Text Processing Search → `FuzzyBolt.searchWithTextProcessing()`
+
+**When to use:** You need advanced text processing like stemming and stop word removal.
 
 ```dart
-// Automatic parallel processing for datasets > 1000 items
+final results = await FuzzyBolt.searchWithTextProcessing<Article>(
+  articles,
+  'the runners are running',
+  selectors: [(a) => a.title, (a) => a.content],
+  enableStemming: true,      // "runners" becomes "runner", "running" becomes "run"
+  removeStopWords: true,     // Removes "the", "are", etc.
+);
+```
+
+---
+
+### 5. Porter Stemmer → Direct Word Manipulation
+
+**When to use:** You need to stem words yourself for preprocessing or analysis.
+
+```dart
+// Stem individual words
+print(PorterStemmer.stem('running'));  // "run"
+print(PorterStemmer.stem('flies'));    // "fli"
+print(PorterStemmer.stem('dogs'));     // "dog"
+
+// Process entire sentences
+final text = 'The runners were running quickly';
+print(PorterStemmer.stemText(text));   // "runner were run quickli"
+
+// Check the stop words list (77 common English words)
+print(PorterStemmer.stopWords.contains('the'));  // true
+```
+
+---
+
+### 6. Dataset Cleaning → `StandardDatasetCleaner`
+
+**When to use:** Your data has duplicates or low-quality entries you want to filter out before searching.
+
+```dart
+// Pick a cleaning strategy
+final cleaner = StandardDatasetCleaner.minimal<Product>();        // Gentle cleaning
+final cleaner = StandardDatasetCleaner.forEcommerce<Product>();   // Balanced (recommended)
+final cleaner = StandardDatasetCleaner.aggressive<Product>();     // Maximum cleaning
+
+// Clean your dataset
+final result = cleaner.cleanDataset(
+  products,
+  [(p) => p.name],
+  qualityThreshold: 0.3,
+  removeDuplicates: true,
+);
+
+print('Original: ${result.statistics.originalCount}');
+print('Cleaned: ${result.statistics.cleanedCount}');
+print('Removed: ${result.statistics.duplicatesRemoved} duplicates');
+
+// Now search the cleaned data
+final searchResults = await FuzzyBolt.search<Product>(
+  result.cleanedItems,  // Use the cleaned list
+  'running shoes',
+  selectors: [(p) => p.name],
+);
+```
+
+---
+
+### 7. Cache Management
+
+```dart
+// Clear the internal text processing cache
+FuzzyBolt.clearTextCache();
+
+// Check cache stats
+final stats = FuzzyBolt.getTextCacheStats();
+print('Cache has ${stats["cacheSize"]} items (max: ${stats["maxCacheSize"]})');
+```
+
+---
+
+## 💡 Real-World Use Cases
+
+**E-commerce: Product search with typos**
+
+```dart
+final results = await FuzzyBolt.searchWithScores<Product>(
+  products,
+  'runing shos',  // User can't spell? We got you.
+  selectors: [(p) => p.name, (p) => p.description],
+);
+```
+
+**HR/Directory: Find employees across departments**
+
+```dart
+final results = await FuzzyBolt.search<Employee>(
+  employees,
+  'john engineering',
+  selectors: [(e) => e.name, (e) => e.department, (e) => e.title],
+);
+```
+
+**Content/Docs: Smart document search**
+
+```dart
+final results = await FuzzyBolt.searchWithTextProcessing<Document>(
+  docs,
+  'professional runners training',
+  selectors: [(d) => d.title, (d) => d.content],
+  enableStemming: true,
+  removeStopWords: true,
+);
+```
+
+**Big Data: Search through 10,000+ items**
+
+```dart
 final results = await FuzzyBolt.search<User>(
-  largeUserList, // 10,000+ users
-  "john doe",
+  massiveUserList,  // 10,000+ users
+  'alice',
   selectors: [(u) => u.name],
-  isolateThreshold: 1000, // Customize threshold
+  maxResults: 10,  // Get top 10 only
 );
+// Automatically uses parallel processing—no config needed!
 ```
 
-## 🌐 Web Compatibility
+---
 
-FuzzyBolt is fully web-compatible. Isolates are automatically disabled on web platforms:
+## ⚡ Performance Tips
+
+**Pro tip #1:** Limit your results if you don't need everything
 
 ```dart
-// Automatically detects web environment and disables isolates
+maxResults: 10  // Stop after finding 10 matches
+```
+
+**Pro tip #2:** Lower the isolate threshold for better performance on medium datasets
+
+```dart
+isolateThreshold: 500  // Use parallel processing at 500+ items (default: 1000)
+```
+
+**Pro tip #3:** Turn off features you don't need
+
+```dart
+enableStemming: false    // Skip if you don't need word variation matching
+enableCleaning: false    // Skip if your data is already clean
+```
+
+**Pro tip #4:** Clean once, search many times
+
+```dart
+// Clean your dataset once
+final cleaned = cleaner.cleanDataset(products, [(p) => p.name]);
+
+// Then reuse the cleaned data for multiple searches
+for (final query in userQueries) {
+  final results = await FuzzyBolt.search<Product>(
+    cleaned.cleanedItems,  // Already clean!
+    query,
+    selectors: [(p) => p.name],
+    enableCleaning: false,  // No need to clean again
+  );
+}
+```
+
+**What to expect:**
+
+| Dataset Size       | Parallel Processing? | Typical Time |
+| ------------------ | -------------------- | ------------ |
+| Under 100 items    | Nope                 | < 10ms       |
+| 100-1,000 items    | Nope                 | 10-100ms     |
+| 1,000-10,000 items | Yes (automatic)      | 100ms-1s     |
+| 10,000+ items      | Yes (automatic)      | 1-3s         |
+
+---
+
+## 🌐 Web Platform Note
+
+**Heads up:** Isolates aren't available on web. Just set `skipIsolate: true`:
+
+```dart
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 final results = await FuzzyBolt.search<User>(
   users,
-  "search query",
+  'query',
   selectors: [(u) => u.name],
-   skipIsolate: true,  // Set this to TRUE if Platform.isWeb
+  skipIsolate: kIsWeb,  // Handles web automatically
 );
 ```
 
+---
 
-## Platform Support
+## 🎛️ Understanding Thresholds
 
-| Platform  | Supported |
-|-----------|----------|
-| Android   | ✅ Yes |
-| iOS       | ✅ Yes |
-| macOS     | ✅ Yes |
-| Windows   | ✅ Yes |
-| Linux     | ✅ Yes |
-| Web       | ✅ Yes |
+Think of thresholds like "how picky should the search be?"
 
-**Built with ❤️ by the Dart community**
+**strictThreshold (default: 0.85)**
+
+- **Higher** (like 0.95) = Be very picky, only near-perfect matches
+- **Lower** (like 0.7) = Be more chill, allow more variation
+
+```dart
+strictThreshold: 0.95  // "Alice" matches "Alice" only
+strictThreshold: 0.85  // "Alice" matches "Alice" and "Alicia"
+strictThreshold: 0.7   // "Alice" matches "Alice", "Alicia", "Alise"
+```
+
+**typeThreshold (default: 0.65)**
+
+- **Higher** (like 0.85) = Strict typo checking
+- **Lower** (like 0.4) = Very forgiving with typos
+
+```dart
+typeThreshold: 0.85  // "Alise" might not match "Alice"
+typeThreshold: 0.65  // "Alise" matches "Alice" ✓
+typeThreshold: 0.4   // "Alce" matches "Alice" ✓
+```
+
+---
+
+## 📱 Platform Support
+
+Works everywhere Dart works:
+
+| Platform | Status | Notes                      |
+| -------- | ------ | -------------------------- |
+| Android  | ✅     | Full support with isolates |
+| iOS      | ✅     | Full support with isolates |
+| macOS    | ✅     | Full support with isolates |
+| Windows  | ✅     | Full support with isolates |
+| Linux    | ✅     | Full support with isolates |
+| Web      | ✅     | Use `skipIsolate: true`    |
+
+---
+
+## 🧪 Testing & Quality
+
+**87 comprehensive tests** covering:
+
+- Basic search & typo tolerance
+- Multi-field search
+- Large datasets (10,000+ items)
+- Text processing & stemming
+- Dataset cleaning
+- Edge cases (unicode, empty strings, special characters)
+- Concurrent access & memory efficiency
+
+Run tests yourself:
+
+```bash
+dart test
+```
+
+---
+
+## 📄 License
+
+BSD-3-Clause License – Free to use, even commercially. See [LICENSE](LICENSE) for details.
+
+---
+
+## 🤝 Need Help?
+
+- 🐛 Found a bug? [Report it here](https://github.com/Vishwa-Karthik/fuzzy_bolt/issues)
+- 💬 Have questions? [Start a discussion](https://github.com/Vishwa-Karthik/fuzzy_bolt/discussions)
+- ⭐ Like it? Give us a star on GitHub!
+
+---
+
+**Built with ❤️ for Dart Community**

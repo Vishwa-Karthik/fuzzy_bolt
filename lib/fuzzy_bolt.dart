@@ -2,7 +2,7 @@
 ///
 /// This library provides production-ready fuzzy searching capabilities
 /// with adaptive ranking, parallel processing, and SOLID architecture.
-library fuzzy_bolt;
+library;
 
 // Core API
 export 'src/fuzzy_bolt.dart';
@@ -12,14 +12,11 @@ export 'src/models/fuzzy_result.dart';
 export 'src/models/fuzzy_search_config.dart';
 export 'src/models/search_candidate.dart';
 
-// Interfaces (for advanced usage)
-export 'src/interfaces/similarity_algorithm.dart';
-export 'src/interfaces/ranking_strategy.dart';
-export 'src/interfaces/parallel_processor.dart';
-
-// Algorithms (for custom implementations)
+// Algorithms (for advanced usage)
 export 'src/algorithms/jaro_winkler_similarity.dart';
 export 'src/algorithms/levenshtein_similarity.dart';
+export 'src/algorithms/porter_stemmer.dart';
+export 'src/algorithms/dataset_cleaner.dart';
 
 // Strategies (for custom ranking)
 export 'src/ranking/adaptive_ranking_strategy.dart';

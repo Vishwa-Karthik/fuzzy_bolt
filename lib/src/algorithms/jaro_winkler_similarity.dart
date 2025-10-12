@@ -67,7 +67,9 @@ class JaroWinklerSimilarity implements SimilarityAlgorithm {
     var k = 0;
     for (var i = 0; i < aLength; i++) {
       if (!aMatches[i]) continue;
-      while (!bMatches[k]) k++;
+      while (!bMatches[k]) {
+        k++;
+      }
       if (a[i] != b[k]) transpositions++;
       k++;
     }
