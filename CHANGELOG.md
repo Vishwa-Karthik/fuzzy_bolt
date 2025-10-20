@@ -1,5 +1,14 @@
 ## Changelog
 
+### [2.0.2] - 2025-10-20
+
+#### 🚀 Performance Optimizations
+
+- **Faster Default Mode**: Lightweight operation without stemming/cleaning overhead
+- **Improved Concurrency**: Better isolate error handling and fallback mechanisms
+- **Cache Efficiency**: 1,000 item cache limit with overflow protection and utilization tracking
+- **Memory Protection**: Hard limits prevent memory exhaustion while maintaining functionality
+
 ### [2.0.1] - 2025-10-12
 
 #### Features

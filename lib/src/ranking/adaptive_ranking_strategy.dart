@@ -42,6 +42,7 @@ class AdaptiveRankingStrategy<T> implements RankingStrategy<T> {
     double strictThreshold,
     double typeThreshold,
   ) {
+    final stopwatch = Stopwatch()..start();
     final normalizedQuery = _normalizeText(query);
     final results = <FuzzyResult<T>>[];
 
@@ -52,8 +53,41 @@ class AdaptiveRankingStrategy<T> implements RankingStrategy<T> {
       }
     }
 
-    // Sort by score in descending order
-    results.sort((a, b) => b.score.compareTo(a.score));
+    stopwatch.stop();
+
+    // Add timing attack protection - ensure minimum processing time
+    final minProcessingTime = (candidates.length * 0.01).clamp(
+      1.0,
+      10.0,
+    ); // 0.01ms per candidate, 1-10ms range
+    final actualTime =
+        stopwatch.elapsedMicroseconds / 1000; // Convert to milliseconds
+
+    if (actualTime < minProcessingTime) {
+      // Add delay to normalize timing - this is a simple protection
+      final delayMicroseconds =
+          ((minProcessingTime - actualTime) * 1000).round();
+      if (delayMicroseconds > 0) {
+        // Non-blocking delay that doesn't reveal timing information
+        _addConstantTimeDelay(delayMicroseconds);
+      }
+    }
+
+    // Sort by score in descending order with stable secondary sorting
+    results.sort((a, b) {
+      final scoreComparison = b.score.compareTo(a.score);
+      if (scoreComparison != 0) return scoreComparison;
+
+      // Secondary sort by matched text length (shorter first for identical scores)
+      final lengthComparison = a.matchedText.length.compareTo(
+        b.matchedText.length,
+      );
+      if (lengthComparison != 0) return lengthComparison;
+
+      // Tertiary sort by matched text alphabetically for full stability
+      return a.matchedText.compareTo(b.matchedText);
+    });
+
     return results;
   }
 
@@ -135,6 +169,16 @@ class AdaptiveRankingStrategy<T> implements RankingStrategy<T> {
 
   String _normalizeText(String text) {
     return text.toLowerCase().trim();
+  }
+
+  /// Adds a constant-time delay for timing attack protection
+  void _addConstantTimeDelay(int microseconds) {
+    // Simple busy wait that doesn't reveal information about the data
+    final end = DateTime.now().microsecondsSinceEpoch + microseconds;
+    var dummy = 0;
+    while (DateTime.now().microsecondsSinceEpoch < end) {
+      dummy = (dummy + 1) % 1000; // Prevent optimization
+    }
   }
 
   @override

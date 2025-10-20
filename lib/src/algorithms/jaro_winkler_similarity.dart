@@ -38,8 +38,10 @@ class JaroWinklerSimilarity implements SimilarityAlgorithm {
     if (aLength == 0 && bLength == 0) return 1.0;
     if (aLength == 0 || bLength == 0) return 0.0;
 
-    final matchWindow = ((aLength > bLength ? aLength : bLength) ~/ 2) - 1;
-    if (matchWindow < 0) return 0.0;
+    // Fix: Ensure match window is at least 1 for strings > 1 char to detect transpositions
+    final maxLength = aLength > bLength ? aLength : bLength;
+    final matchWindow =
+        maxLength <= 1 ? 0 : ((maxLength ~/ 2) - 1).clamp(1, maxLength);
 
     final aMatches = List<bool>.filled(aLength, false);
     final bMatches = List<bool>.filled(bLength, false);

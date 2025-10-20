@@ -44,7 +44,7 @@ Add Fuzzy Bolt to your project:
 
 ```yaml
 dependencies:
-  fuzzy_bolt: ^2.0.0
+  fuzzy_bolt: <latest-version>
 ```
 
 Then grab it:

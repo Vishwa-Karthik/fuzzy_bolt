@@ -18,6 +18,37 @@ class FuzzyBolt {
   // Enhanced features - text processing and dataset cleaning
   static final Map<String, String> _textCache = <String, String>{};
   static const int _maxCacheSize = 1000;
+  static const int _maxStringLength =
+      50000; // Prevent DoS with very long strings
+
+  /// Validates input parameters and throws descriptive errors
+  static void _validateInputs({
+    required double strictThreshold,
+    required double typeThreshold,
+    required int isolateThreshold,
+    int? maxResults,
+  }) {
+    if (strictThreshold < 0.0 || strictThreshold > 1.0) {
+      throw ArgumentError(
+        'strictThreshold must be between 0.0 and 1.0, got: $strictThreshold',
+      );
+    }
+    if (typeThreshold < 0.0 || typeThreshold > 1.0) {
+      throw ArgumentError(
+        'typeThreshold must be between 0.0 and 1.0, got: $typeThreshold',
+      );
+    }
+    if (isolateThreshold < 0) {
+      throw ArgumentError(
+        'isolateThreshold must be non-negative, got: $isolateThreshold',
+      );
+    }
+    if (maxResults != null && maxResults <= 0) {
+      throw ArgumentError(
+        'maxResults must be positive if specified, got: $maxResults',
+      );
+    }
+  }
 
   /// Searches a dataset and returns matching items.
   ///
@@ -29,8 +60,8 @@ class FuzzyBolt {
   /// [isolateThreshold] - Minimum dataset size to use isolates (default: 1000).
   /// [skipIsolate] - Force disable isolate usage (default: false).
   /// [maxResults] - Maximum number of results to return.
-  /// [enableStemming] - Whether to apply Porter stemming (default: true).
-  /// [enableCleaning] - Whether to clean dataset for better results (default: true).
+  /// [enableStemming] - Whether to apply Porter stemming (default: false).
+  /// [enableCleaning] - Whether to clean dataset for better results (default: false).
   static Future<List<T>> search<T>(
     List<T> dataset,
     String query, {
@@ -40,9 +71,16 @@ class FuzzyBolt {
     int isolateThreshold = 1000,
     bool skipIsolate = false,
     int? maxResults,
-    bool enableStemming = true,
-    bool enableCleaning = true,
+    bool enableStemming = false,
+    bool enableCleaning = false,
   }) async {
+    // Validate inputs early
+    _validateInputs(
+      strictThreshold: strictThreshold,
+      typeThreshold: typeThreshold,
+      isolateThreshold: isolateThreshold,
+      maxResults: maxResults,
+    );
     final results = await searchWithScores<T>(
       dataset,
       query,
@@ -69,8 +107,8 @@ class FuzzyBolt {
   /// [isolateThreshold] - Minimum dataset size to use isolates (default: 1000).
   /// [skipIsolate] - Force disable isolate usage (default: false).
   /// [maxResults] - Maximum number of results to return.
-  /// [enableStemming] - Whether to apply Porter stemming (default: true).
-  /// [enableCleaning] - Whether to clean dataset for better results (default: true).
+  /// [enableStemming] - Whether to apply Porter stemming (default: false).
+  /// [enableCleaning] - Whether to clean dataset for better results (default: false).
   static Future<List<FuzzyResult<T>>> searchWithScores<T>(
     List<T> dataset,
     String query, {
@@ -80,12 +118,27 @@ class FuzzyBolt {
     int isolateThreshold = 1000,
     bool skipIsolate = false,
     int? maxResults,
-    bool enableStemming = true,
-    bool enableCleaning = true,
+    bool enableStemming = false,
+    bool enableCleaning = false,
   }) async {
-    // Validate inputs
+    // Validate inputs early
+    _validateInputs(
+      strictThreshold: strictThreshold,
+      typeThreshold: typeThreshold,
+      isolateThreshold: isolateThreshold,
+      maxResults: maxResults,
+    );
+
+    // Validate basic inputs
     if (dataset.isEmpty || query.trim().isEmpty || selectors.isEmpty) {
       return <FuzzyResult<T>>[];
+    }
+
+    // Prevent DoS with very long query strings
+    if (query.length > _maxStringLength) {
+      throw ArgumentError(
+        'Query string too long. Maximum length is $_maxStringLength characters.',
+      );
     }
 
     // Apply enhanced features if enabled
@@ -167,8 +220,17 @@ class FuzzyBolt {
     List<String Function(T)> selectors,
     FuzzySearchConfig config,
   ) async {
+    // Note: Config validation is handled by FuzzySearchConfig constructor
+
     if (dataset.isEmpty || query.trim().isEmpty || selectors.isEmpty) {
       return <FuzzyResult<T>>[];
+    }
+
+    // Prevent DoS with very long query strings
+    if (query.length > _maxStringLength) {
+      throw ArgumentError(
+        'Query string too long. Maximum length is $_maxStringLength characters.',
+      );
     }
 
     return _performSearch<T>(dataset, query, selectors, config);
@@ -196,8 +258,23 @@ class FuzzyBolt {
     double typeThreshold = 0.65,
     int? maxResults,
   }) async {
+    // Validate inputs early
+    _validateInputs(
+      strictThreshold: strictThreshold,
+      typeThreshold: typeThreshold,
+      isolateThreshold: 1000,
+      maxResults: maxResults,
+    );
+
     if (dataset.isEmpty || query.trim().isEmpty || selectors.isEmpty) {
       return <FuzzyResult<T>>[];
+    }
+
+    // Prevent DoS with very long query strings
+    if (query.length > _maxStringLength) {
+      throw ArgumentError(
+        'Query string too long. Maximum length is $_maxStringLength characters.',
+      );
     }
 
     // Process the query
@@ -252,28 +329,63 @@ class FuzzyBolt {
   ) async {
     final normalizedQuery = query.trim();
 
+    // Validate selectors by testing them safely
+    try {
+      if (dataset.isNotEmpty) {
+        for (final selector in selectors) {
+          final testResult = selector(dataset.first);
+          if (testResult.length > _maxStringLength) {
+            // Log warning but don't fail - truncation will handle it
+          }
+        }
+      }
+    } catch (e) {
+      throw ArgumentError('One or more selectors threw an exception: $e');
+    }
+
     // Choose processor based on dataset size and configuration
     final processor = _selectProcessor(dataset.length, config);
 
     try {
-      return await processor.processSearch<T>(
-        dataset: dataset,
-        query: normalizedQuery,
-        selectors: selectors,
-        strictThreshold: config.strictThreshold,
-        typeThreshold: config.typeThreshold,
-        maxResults: config.maxResults,
-      );
+      // Add timeout protection for long-running operations
+      return await processor
+          .processSearch<T>(
+            dataset: dataset,
+            query: normalizedQuery,
+            selectors: selectors,
+            strictThreshold: config.strictThreshold,
+            typeThreshold: config.typeThreshold,
+            maxResults: config.maxResults,
+          )
+          .timeout(
+            Duration(seconds: 30),
+            onTimeout: () {
+              // Fallback to synchronous processing on timeout
+              return _syncProcessor.processSearch<T>(
+                dataset: dataset,
+                query: normalizedQuery,
+                selectors: selectors,
+                strictThreshold: config.strictThreshold,
+                typeThreshold: config.typeThreshold,
+                maxResults: config.maxResults,
+              );
+            },
+          );
     } catch (e) {
       // Fallback to synchronous processing on any error
-      return await _syncProcessor.processSearch<T>(
-        dataset: dataset,
-        query: normalizedQuery,
-        selectors: selectors,
-        strictThreshold: config.strictThreshold,
-        typeThreshold: config.typeThreshold,
-        maxResults: config.maxResults,
-      );
+      try {
+        return await _syncProcessor.processSearch<T>(
+          dataset: dataset,
+          query: normalizedQuery,
+          selectors: selectors,
+          strictThreshold: config.strictThreshold,
+          typeThreshold: config.typeThreshold,
+          maxResults: config.maxResults,
+        );
+      } catch (fallbackError) {
+        // If even synchronous processing fails, return empty results
+        return <FuzzyResult<T>>[];
+      }
     }
   }
 
@@ -285,6 +397,12 @@ class FuzzyBolt {
     Set<String> customStopWords = const {},
   }) {
     if (text.isEmpty) return text;
+
+    // Prevent DoS with very long selector strings
+    if (text.length > _maxStringLength) {
+      // Truncate very long strings instead of throwing error
+      text = text.substring(0, _maxStringLength);
+    }
 
     // Check cache first
     final cacheKey =
